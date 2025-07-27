@@ -52,4 +52,8 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.glide)
     implementation(libs.chip.navigation.bar)
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    // Glide v4 uses this new annotation processor -- see https://bumptech.github.io/glide/doc/generatedapi.html
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 }

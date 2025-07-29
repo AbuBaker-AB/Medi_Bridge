@@ -5,8 +5,6 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="20dp"
-    android:padding="15dp"
     android:background="@drawable/blue_bg"
     tools:context=".IntroActivity">
 
@@ -14,6 +12,7 @@
         android:id="@+id/textViewTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         android:layout_marginBottom="10dp"
         android:text="Medi Bridge"
         android:textColor="#171717"
@@ -26,6 +25,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.048" />
 
+
     <TextView
         android:id="@+id/textViewSubTitle"
         android:layout_width="wrap_content"
@@ -33,22 +33,12 @@
         android:text="Your health, our priority"
         android:textColor="#171717"
         android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@id/imageViewCloud"
+        app:layout_constraintBottom_toTopOf="@id/imageViewCloud2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.105"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewTitle" />
-
-    <ImageView
-        android:id="@+id/imageViewCloud"
-        android:layout_width="200dp"
-        android:layout_height="130dp"
-        android:layout_marginTop="24dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewSubTitle"
-        app:srcCompat="@drawable/cloud" />
+        app:layout_constraintTop_toBottomOf="@id/textViewTitle"
+        app:layout_constraintVertical_bias="0.088" />
 
     <ImageView
         android:id="@+id/imageViewCloud2"
@@ -71,20 +61,21 @@
         app:srcCompat="@drawable/hospital_building"
         tools:layout_editor_absoluteX="-81dp" />
 
-    <Button
-        android:id="@+id/button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:backgroundTint="#EF4C7F"
-        android:text="Let's Get Started"
-        android:textColor="@color/white"
-        android:textSize="20sp"
+    <ImageButton
+        android:id="@+id/buttonCloud"
+        android:layout_width="158dp"
+        android:layout_height="91dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/small_cloud"
+        android:backgroundTint="@null"
+        android:text="Get Started"
+        android:textColor="@color/lightGrey"
+        android:textSize="16sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.094"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintTop_toBottomOf="@id/textViewSubTitle" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -22,8 +22,8 @@ MediBridge is a lightweight Android app designed to help users find doctors and 
 | Language      | Kotlin                        |
 | UI            | XML (Material Design)          |
 | Architecture  | MVVM                          |
-| Backend       | Imgur|
-| Storage       | Firebase Storage (doctor images) |
+| Backend       | Firebase Firestore (real-time)|
+| Storage       | Imgur (doctor images) |
 | Image Loading | Glide / Coil                  |
 
 ---

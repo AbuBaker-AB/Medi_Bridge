@@ -43,7 +43,7 @@
 
                     <TextView
                         android:id="@+id/textView2"
-                        android:layout_width="match_parent"
+                        android:layout_width="300dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
                         android:text="How Are You Today?"
@@ -52,16 +52,16 @@
 
                 <ImageView
                     android:id="@+id/imageView3"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
-                    android:layout_weight="1"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginEnd="15dp"
                     app:srcCompat="@drawable/bell_icon" />
 
             </LinearLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_marginTop="2dp"
+                android:layout_marginTop="8dp"
                 android:layout_height="match_parent">
 
                 <ImageView
@@ -74,6 +74,31 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:srcCompat="@drawable/banner" />
+
+                <EditText
+                    android:id="@+id/editTextText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="32dp"
+                    android:layout_marginEnd="32dp"
+                    android:ems="10"
+                    android:hint="Searching..."
+                    android:textStyle="italic"
+                    android:textColor="@color/black"
+                    android:textColorHint="#323232"
+                    android:background="@drawable/white_bg"
+                    android:inputType="text"
+                    android:padding="12dp"
+                    android:textSize="18sp"
+                    android:drawableEnd="@drawable/search_icon"
+                    android:elevation="3dp"
+                    app:layout_constraintTop_toBottomOf="@+id/imageView2"
+                    app:layout_constraintBottom_toBottomOf="@+id/imageView2"
+                    app:layout_constraintEnd_toEndOf="@+id/imageView2"
+                    app:layout_constraintStart_toStartOf="@+id/imageView2"
+                    tools:layout_editor_absoluteY="240dp" />
+
+
             </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
     </ScrollView>

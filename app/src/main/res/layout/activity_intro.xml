@@ -66,6 +66,8 @@
         android:layout_width="158dp"
         android:layout_height="91dp"
         android:layout_marginTop="8dp"
+        android:contextClickable="true"
+        android:contentDescription="Get Started"
         android:background="@drawable/small_cloud"
         android:backgroundTint="@null"
         android:text="Get Started"

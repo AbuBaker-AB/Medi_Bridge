@@ -16,7 +16,7 @@ class IntroActivity : BaseActivity() {
 
         binding.apply {
             buttonCloud.setOnClickListener {
-                startActivity(Intent(this@IntroActivity, IntroActivity::class.java))
+                startActivity(Intent(this@IntroActivity, MainActivity::class.java))
             }
         }
 

@@ -1,4 +1,4 @@
-package com.aas.medi_bridge
+package com.aas.medi_bridge.Activity
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,8 +6,8 @@ import android.os.Handler
 import android.os.Looper
 
 import androidx.appcompat.app.AppCompatActivity
+import com.aas.medi_bridge.R
 import com.aas.medi_bridge.databinding.ActivitySplashScreenBinding
-import com.google.android.material.animation.AnimationUtils
 
 
 class SplashScreenActivity : AppCompatActivity() {

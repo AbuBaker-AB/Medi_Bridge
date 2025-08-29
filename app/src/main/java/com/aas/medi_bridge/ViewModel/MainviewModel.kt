@@ -25,7 +25,11 @@ class MainviewModel(): ViewModel() {
                 for (childSnapshot in snapshot.children){
                     val list= childSnapshot.getValue(CategoryModel::class.java)
                     if(list!=null){
-                        lists.add(list)
+                        // Map Picture property to drawable resource IDs
+                        val updatedList = list.copy(
+                            Picture = list.Picture // Use the Picture field directly as a URL
+                        )
+                        lists.add(updatedList)
                     }
                 }
 
@@ -34,7 +38,8 @@ class MainviewModel(): ViewModel() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                TODO("Not yet implemented")
+                // Handle the error appropriately instead of crashing
+                android.util.Log.e("MainviewModel", "Database error: ${error.message}")
             }
 
         })

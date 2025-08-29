@@ -5,13 +5,14 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.aas.medi_bridge.Adapter.CategoryAdapter
+import com.aas.medi_bridge.Adapter.TopDoctorAdapter
 import com.aas.medi_bridge.Domain.CategoryModel
 import com.aas.medi_bridge.R
 import com.aas.medi_bridge.ViewModel.MainviewModel
 import com.aas.medi_bridge.databinding.ActivityMainBinding
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel = MainviewModel()
@@ -22,7 +23,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         intCategroy()
+        initDoctor()
 
+    }
+
+    private fun initDoctor() {
+        binding.progressBarTopDoctor.visibility = View.VISIBLE
+        viewModel.doctors.observe(this,{
+            binding.recyclerViewTopDoctor.layoutManager= LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL,false)
+            binding.recyclerViewTopDoctor.adapter= TopDoctorAdapter(it)
+            binding.progressBarTopDoctor.visibility= View.GONE
+        })
+        viewModel.loadDoctors()
     }
 
     private fun intCategroy() {

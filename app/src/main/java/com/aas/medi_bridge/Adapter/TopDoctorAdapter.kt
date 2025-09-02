@@ -24,17 +24,20 @@ class TopDoctorAdapter(val items: MutableList<DoctorsModel>): RecyclerView.Adapt
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.binding.nameTxt.text=items[position].name
-        holder.binding.specialTxt.text=items[position].specialization
-        holder.binding.scoreTxt.text=items[position].rating.toString()
+        holder.binding.nameTxt.text = items[position].name
+        holder.binding.specialTxt.text = items[position].specialization
+        holder.binding.scoreTxt.text = items[position].rating.toString()
 
-        // Convert Imgur URL to direct image URL
-        val imageUrl = if (items[position].image.contains("imgur.com") && !items[position].image.contains("i.imgur.com")) {
-            // Convert imgur.com/abc to i.imgur.com/abc.jpg
-            val imageId = items[position].image.substringAfterLast("/")
-            "https://i.imgur.com/$imageId.jpg"
-        } else {
-            items[position].image
+        // Get doctor image or fallback to first chamber image
+        var imageUrl = items[position].image
+        if (imageUrl.isBlank() && items[position].chambers.isNotEmpty()) {
+            imageUrl = items[position].chambers[0].image
+        }
+
+        // Convert Imgur URL to direct image URL if needed
+        if (imageUrl.isNotBlank() && imageUrl.contains("imgur.com") && !imageUrl.contains("i.imgur.com")) {
+            val imageId = imageUrl.substringAfterLast("/")
+            imageUrl = "https://i.imgur.com/$imageId.jpg"
         }
 
         Glide.with(holder.itemView.context)

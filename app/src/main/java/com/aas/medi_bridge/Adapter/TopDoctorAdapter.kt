@@ -1,9 +1,11 @@
 package com.aas.medi_bridge.Adapter
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.aas.medi_bridge.Activity.DetailActivity
 import com.aas.medi_bridge.Domain.DoctorsModel
 import com.aas.medi_bridge.databinding.ViewholderTopDoctorBinding
 import com.bumptech.glide.Glide
@@ -47,6 +49,11 @@ class TopDoctorAdapter(val items: MutableList<DoctorsModel>): RecyclerView.Adapt
             .apply(RequestOptions().transform(CenterCrop()))
             .into(holder.binding.imageview6)
 
+        holder.itemView.setOnClickListener {
+            val intent = Intent(context, DetailActivity::class.java)
+            intent.putExtra("Object", items[position])
+            context?.startActivity(intent)
+        }
     }
 
     override fun getItemCount(): Int = items.size

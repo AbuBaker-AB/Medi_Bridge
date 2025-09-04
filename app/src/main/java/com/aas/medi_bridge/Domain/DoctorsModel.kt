@@ -9,6 +9,7 @@ data class DoctorsModel(
     val degrees: String = "",
     val designation: String = "",
     val city: String = "",
+    val patients: String = "",
     val rating: Double = 0.0,
     val image: String = "",
     val chambers: List<Chamber> = emptyList()

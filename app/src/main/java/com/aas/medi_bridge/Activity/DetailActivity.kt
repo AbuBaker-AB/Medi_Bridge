@@ -36,34 +36,88 @@ class DetailActivity : BaseActivity() {
 
             backBtn.setOnClickListener { finish() }
 
+            // Add debug logging to verify button initialization
+            android.util.Log.d("DetailActivity", "Setting up click listeners")
+            android.util.Log.d("DetailActivity", "Doctor data - Site: '${item.Site}', Mobile: '${item.Mobile}', Location: '${item.location}'")
+
+            // Ensure buttons are clickable
+            websiteBtn.isClickable = true
+            messageBtn.isClickable = true
+            callBtn.isClickable = true
+            directionBtn.isClickable = true
+
             websiteBtn.setOnClickListener {
-                if (item.Site.isNotEmpty()) {
-                    val intent = Intent(Intent.ACTION_VIEW, item.Site.toUri())
+                android.util.Log.d("DetailActivity", "Website button clicked")
+                android.util.Log.d("DetailActivity", "Site value: '${item.Site}' (length: ${item.Site.length})")
+                try {
+                    // Test with a default website if Site is empty
+                    val websiteUrl = if (item.Site.isNotEmpty()) {
+                        item.Site
+                    } else {
+                        "https://www.google.com" // Default website for testing
+                    }
+                    android.util.Log.d("DetailActivity", "Opening website: $websiteUrl")
+                    val intent = Intent(Intent.ACTION_VIEW, websiteUrl.toUri())
                     startActivity(intent)
+                } catch (e: Exception) {
+                    android.util.Log.e("DetailActivity", "Error opening website: ${e.message}")
                 }
             }
 
             messageBtn.setOnClickListener {
-                if (item.Mobile.isNotEmpty()) {
-                    val uri = "smsto:${item.Mobile}".toUri()
+                android.util.Log.d("DetailActivity", "Message button clicked")
+                android.util.Log.d("DetailActivity", "Mobile value: '${item.Mobile}' (length: ${item.Mobile.length})")
+                try {
+                    // Test with a default number if Mobile is empty
+                    val phoneNumber = if (item.Mobile.isNotEmpty()) {
+                        item.Mobile
+                    } else {
+                        "1234567890" // Default number for testing
+                    }
+                    android.util.Log.d("DetailActivity", "Sending SMS to: $phoneNumber")
+                    val uri = "smsto:$phoneNumber".toUri()
                     val intent = Intent(Intent.ACTION_SENDTO, uri)
                     intent.putExtra("sms_body", "Hello, I would like to schedule an appointment")
                     startActivity(intent)
+                } catch (e: Exception) {
+                    android.util.Log.e("DetailActivity", "Error opening SMS: ${e.message}")
                 }
             }
 
             callBtn.setOnClickListener {
-                if (item.Mobile.isNotEmpty()) {
-                    val uri = "tel:${item.Mobile.trim()}".toUri()
+                android.util.Log.d("DetailActivity", "Call button clicked")
+                android.util.Log.d("DetailActivity", "Mobile value: '${item.Mobile}' (length: ${item.Mobile.length})")
+                try {
+                    // Test with a default number if Mobile is empty
+                    val phoneNumber = if (item.Mobile.isNotEmpty()) {
+                        item.Mobile.trim()
+                    } else {
+                        "1234567890" // Default number for testing
+                    }
+                    android.util.Log.d("DetailActivity", "Calling: $phoneNumber")
+                    val uri = "tel:$phoneNumber".toUri()
                     val intent = Intent(Intent.ACTION_DIAL, uri)
                     startActivity(intent)
+                } catch (e: Exception) {
+                    android.util.Log.e("DetailActivity", "Error opening dialer: ${e.message}")
                 }
             }
 
             directionBtn.setOnClickListener {
-                if (item.location.isNotEmpty()) {
-                    val intent = Intent(Intent.ACTION_VIEW, item.location.toUri())
+                android.util.Log.d("DetailActivity", "Direction button clicked")
+                android.util.Log.d("DetailActivity", "Location value: '${item.location}' (length: ${item.location.length})")
+                try {
+                    // Test with a default location if location is empty
+                    val locationUrl = if (item.location.isNotEmpty()) {
+                        item.location
+                    } else {
+                        "geo:0,0?q=Hospital" // Default location search for testing
+                    }
+                    android.util.Log.d("DetailActivity", "Opening location: $locationUrl")
+                    val intent = Intent(Intent.ACTION_VIEW, locationUrl.toUri())
                     startActivity(intent)
+                } catch (e: Exception) {
+                    android.util.Log.e("DetailActivity", "Error opening maps: ${e.message}")
                 }
             }
 

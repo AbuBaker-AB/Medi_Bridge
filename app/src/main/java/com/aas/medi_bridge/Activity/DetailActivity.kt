@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import com.aas.medi_bridge.Domain.DoctorsModel
+import com.aas.medi_bridge.R
 import com.aas.medi_bridge.databinding.ActivityDetailBinding
 import com.bumptech.glide.Glide
 
@@ -77,9 +78,31 @@ class DetailActivity : AppCompatActivity() {
                 startActivity(Intent.createChooser(intent, "Share via"))
             }
 
+            // Enhanced image loading logic matching the adapter
+            var imageUrl = item.image
+
+            // Fallback to first chamber image if main image is blank
+            if (imageUrl.isBlank() && item.chambers.isNotEmpty()) {
+                imageUrl = item.chambers[0].image
+            }
+
+            // Convert Imgur URL to direct image URL if needed
+            if (imageUrl.isNotBlank() && imageUrl.contains("imgur.com") && !imageUrl.contains("i.imgur.com")) {
+                val imageId = imageUrl.substringAfterLast("/")
+                imageUrl = "https://i.imgur.com/$imageId.jpg"
+            }
+
             Glide.with(this@DetailActivity)
-                .load(item.image)
+                .load(imageUrl)
+                .placeholder(R.drawable.women) // Show placeholder while loading
+                .error(R.drawable.women) // Show fallback image if loading fails
+                .centerCrop()
                 .into(img)
+
+            // Debug: Log the processed image URL
+            android.util.Log.d("DetailActivity", "Original image URL: ${item.image}")
+            android.util.Log.d("DetailActivity", "Processed image URL: $imageUrl")
+            android.util.Log.d("DetailActivity", "Chambers available: ${item.chambers.size}")
         }
     }
 }

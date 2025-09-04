@@ -12,6 +12,12 @@ data class DoctorsModel(
     val patients: String = "",
     val rating: Double = 0.0,
     val image: String = "",
+    val bio: String = "",
+    val address: String = "",
+    val experience: Int = 0,
+    val Mobile: String = "",
+    val Site: String = "",
+    val location: String = "",
     val chambers: List<Chamber> = emptyList()
 ) : Parcelable {
 
@@ -21,7 +27,14 @@ data class DoctorsModel(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
+        parcel.readString() ?: "",
         parcel.readDouble(),
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readInt(),
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.createTypedArrayList(Chamber.CREATOR) ?: emptyList()
     )
@@ -32,8 +45,15 @@ data class DoctorsModel(
         parcel.writeString(degrees)
         parcel.writeString(designation)
         parcel.writeString(city)
+        parcel.writeString(patients)
         parcel.writeDouble(rating)
         parcel.writeString(image)
+        parcel.writeString(bio)
+        parcel.writeString(address)
+        parcel.writeInt(experience)
+        parcel.writeString(Mobile)
+        parcel.writeString(Site)
+        parcel.writeString(location)
         parcel.writeTypedList(chambers)
     }
 

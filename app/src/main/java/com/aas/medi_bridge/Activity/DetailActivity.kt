@@ -10,7 +10,7 @@ import com.aas.medi_bridge.R
 import com.aas.medi_bridge.databinding.ActivityDetailBinding
 import com.bumptech.glide.Glide
 
-class DetailActivity : AppCompatActivity() {
+class DetailActivity : BaseActivity() {
     private lateinit var binding: ActivityDetailBinding
     private lateinit var item: DoctorsModel
 

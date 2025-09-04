@@ -34,6 +34,30 @@ class DetailActivity : BaseActivity() {
             experiensTxt.text = "${item.experience} years"
             ratingTxt.text = item.rating.toString()
 
+            // Debug: Log all doctor data fields to see what's populated
+            android.util.Log.d("DetailActivity", "=== Doctor Data Debug ===")
+            android.util.Log.d("DetailActivity", "name: '${item.name}'")
+            android.util.Log.d("DetailActivity", "specialization: '${item.specialization}'")
+            android.util.Log.d("DetailActivity", "degrees: '${item.degrees}'")
+            android.util.Log.d("DetailActivity", "designation: '${item.designation}'")
+            android.util.Log.d("DetailActivity", "city: '${item.city}'")
+            android.util.Log.d("DetailActivity", "patients: '${item.patients}'")
+            android.util.Log.d("DetailActivity", "rating: '${item.rating}'")
+            android.util.Log.d("DetailActivity", "image: '${item.image}'")
+            android.util.Log.d("DetailActivity", "bio: '${item.bio}'")
+            android.util.Log.d("DetailActivity", "address: '${item.address}'")
+            android.util.Log.d("DetailActivity", "experience: '${item.experience}'")
+            android.util.Log.d("DetailActivity", "Mobile: '${item.Mobile}'")
+            android.util.Log.d("DetailActivity", "Site: '${item.Site}'")
+            android.util.Log.d("DetailActivity", "location: '${item.location}'")
+            android.util.Log.d("DetailActivity", "chambers: ${item.chambers.size} items")
+            android.util.Log.d("DetailActivity", "========================")
+
+            // Show placeholder text for empty bio
+            if (item.bio.isBlank()) {
+                bioTxt.text = "Biography information will be available soon."
+            }
+
             backBtn.setOnClickListener { finish() }
 
             // Add debug logging to verify button initialization

@@ -1,5 +1,6 @@
 package com.aas.medi_bridge.Adapter
 
+import android.R
 import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
@@ -7,22 +8,23 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.aas.medi_bridge.Activity.DetailActivity
 import com.aas.medi_bridge.Domain.DoctorsModel
+import com.aas.medi_bridge.databinding.ViewholderTopDoctor2Binding
 import com.aas.medi_bridge.databinding.ViewholderTopDoctorBinding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 
-class TopDoctorAdapter(val items: MutableList<DoctorsModel>): RecyclerView.Adapter<TopDoctorAdapter.ViewHolder>() {
+class TopDoctorAdapter2(val items: MutableList<DoctorsModel>): RecyclerView.Adapter<TopDoctorAdapter2.ViewHolder>() {
     private var context: Context?=null
 
-    class ViewHolder(val binding: ViewholderTopDoctorBinding):
+    class ViewHolder(val binding: ViewholderTopDoctor2Binding):
         RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         context=parent.context
         val binding=
-            ViewholderTopDoctorBinding.inflate(LayoutInflater.from(parent.context),parent,false)
+            ViewholderTopDoctor2Binding.inflate(LayoutInflater.from(parent.context),parent,false)
         return ViewHolder(binding)
     }
 
@@ -30,6 +32,9 @@ class TopDoctorAdapter(val items: MutableList<DoctorsModel>): RecyclerView.Adapt
         holder.binding.nameTxt.text = items[position].name
         holder.binding.specialTxt.text = items[position].specialization
         holder.binding.scoreTxt.text = items[position].rating.toString()
+        holder.binding.ratingBar.rating = items[position].rating.toFloat()
+        holder.binding.scoreTxt.text = items[position].rating.toString()
+        holder.binding.degreeTxt.text = "Professional Doctor"
 
         // Get doctor image or fallback to first chamber image
         var imageUrl = items[position].image
@@ -46,12 +51,11 @@ class TopDoctorAdapter(val items: MutableList<DoctorsModel>): RecyclerView.Adapt
         Glide.with(holder.itemView.context)
             .load(imageUrl)
             .transform(CenterCrop(), RoundedCorners(16)) // CenterCrop and rounded corners
-            .placeholder(android.R.drawable.ic_menu_gallery)
-            .error(android.R.drawable.ic_menu_gallery)
-           // .apply(RequestOptions().transform(CenterCrop()))
-            .into(holder.binding.imageview6)
+            .placeholder(R.drawable.ic_menu_gallery)
+            .error(R.drawable.ic_menu_gallery)
+            .into(holder.binding.img)
 
-        holder.itemView.setOnClickListener {
+        holder.binding.makeBtn.setOnClickListener {
             val intent = Intent(context, DetailActivity::class.java)
             intent.putExtra("Object", items[position])
             context?.startActivity(intent)

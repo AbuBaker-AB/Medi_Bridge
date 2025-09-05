@@ -5,4 +5,5 @@
     <string name="we_can_help_you_to_find_available_n_doctor_appointments_near_you">We can help you to find available\n doctor appointments near you</string>
     <string name="get_started">Get Started</string>
     <string name="make_appointment">Make Appointment</string>
+    <string name="back_button">Back</string>
 </resources>

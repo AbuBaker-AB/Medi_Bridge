@@ -10,6 +10,7 @@ import com.aas.medi_bridge.Domain.DoctorsModel
 import com.aas.medi_bridge.databinding.ViewholderTopDoctorBinding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestOptions
 
 class TopDoctorAdapter(val items: MutableList<DoctorsModel>): RecyclerView.Adapter<TopDoctorAdapter.ViewHolder>() {
@@ -44,9 +45,10 @@ class TopDoctorAdapter(val items: MutableList<DoctorsModel>): RecyclerView.Adapt
 
         Glide.with(holder.itemView.context)
             .load(imageUrl)
+            .transform(CenterCrop(), RoundedCorners(16)) // CenterCrop and rounded corners
             .placeholder(android.R.drawable.ic_menu_gallery)
             .error(android.R.drawable.ic_menu_gallery)
-            .apply(RequestOptions().transform(CenterCrop()))
+           // .apply(RequestOptions().transform(CenterCrop()))
             .into(holder.binding.imageview6)
 
         holder.itemView.setOnClickListener {

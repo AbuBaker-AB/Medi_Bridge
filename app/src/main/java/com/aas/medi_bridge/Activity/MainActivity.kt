@@ -1,5 +1,6 @@
 package com.aas.medi_bridge.Activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -35,6 +36,12 @@ class MainActivity : BaseActivity() {
             binding.progressBarTopDoctor.visibility= View.GONE
         })
         viewModel.loadDoctors()
+
+        binding.doctorListTxt.setOnClickListener {
+            val intent = Intent(this, TopDoctorsActivity::class.java)
+            startActivity(intent)
+        }
+
     }
 
     private fun intCategroy() {

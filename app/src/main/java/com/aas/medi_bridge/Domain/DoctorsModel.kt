@@ -9,9 +9,17 @@ data class DoctorsModel(
     val degrees: String = "",
     val designation: String = "",
     val city: String = "",
+    val patients: String = "",
     val rating: Double = 0.0,
     val image: String = "",
-    val chambers: List<Chamber> = emptyList()
+    val bio: String = "",
+    val address: String = "",
+    val experience: Int = 0,
+    val Mobile: String = "",
+    val Site: String = "",
+    val location: String = "",
+    val chambers: List<Chamber> = emptyList(),
+    val visiting_hour: String = ""
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -20,9 +28,17 @@ data class DoctorsModel(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
+        parcel.readString() ?: "",
         parcel.readDouble(),
         parcel.readString() ?: "",
-        parcel.createTypedArrayList(Chamber.CREATOR) ?: emptyList()
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readInt(),
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.createTypedArrayList(Chamber.CREATOR) ?: emptyList(),
+        parcel.readString() ?: ""
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -31,9 +47,17 @@ data class DoctorsModel(
         parcel.writeString(degrees)
         parcel.writeString(designation)
         parcel.writeString(city)
+        parcel.writeString(patients)
         parcel.writeDouble(rating)
         parcel.writeString(image)
+        parcel.writeString(bio)
+        parcel.writeString(address)
+        parcel.writeInt(experience)
+        parcel.writeString(Mobile)
+        parcel.writeString(Site)
+        parcel.writeString(location)
         parcel.writeTypedList(chambers)
+        parcel.writeString(visiting_hour)
     }
 
     override fun describeContents(): Int {
@@ -66,7 +90,7 @@ data class Chamber(
         parcel.readString(),
         parcel.readString() ?: "",
         parcel.readString() ?: "",
-        parcel.readString() ?: ""
+        parcel.readString() ?: "",
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

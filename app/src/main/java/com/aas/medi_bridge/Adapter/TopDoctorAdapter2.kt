@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.aas.medi_bridge.Activity.DetailActivity
 import com.aas.medi_bridge.Domain.DoctorsModel
+import com.aas.medi_bridge.databinding.ViewholderTopDoctor2Binding
 import com.aas.medi_bridge.databinding.ViewholderTopDoctorBinding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
@@ -16,19 +17,21 @@ import com.bumptech.glide.request.RequestOptions
 class TopDoctorAdapter2(val items: MutableList<DoctorsModel>): RecyclerView.Adapter<TopDoctorAdapter2.ViewHolder>() {
     private var context: Context?=null
 
-    class ViewHolder(val binding: ViewholderTopDoctorBinding):
+    class ViewHolder(val binding: ViewholderTopDoctor2Binding):
         RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         context=parent.context
         val binding=
-            ViewholderTopDoctorBinding.inflate(LayoutInflater.from(parent.context),parent,false)
+            ViewholderTopDoctor2Binding.inflate(LayoutInflater.from(parent.context),parent,false)
         return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.binding.nameTxt.text = items[position].name
         holder.binding.specialTxt.text = items[position].specialization
+        holder.binding.scoreTxt.text = items[position].rating.toString()
+        holder.binding.ratingBar.rating = items[position].rating.toFloat()
         holder.binding.scoreTxt.text = items[position].rating.toString()
 
         // Get doctor image or fallback to first chamber image
@@ -48,9 +51,9 @@ class TopDoctorAdapter2(val items: MutableList<DoctorsModel>): RecyclerView.Adap
             .placeholder(R.drawable.ic_menu_gallery)
             .error(R.drawable.ic_menu_gallery)
             .apply(RequestOptions().transform(CenterCrop()))
-            .into(holder.binding.imageview6)
+            .into(holder.binding.img)
 
-        holder.itemView.setOnClickListener {
+        holder.binding.makeBtn.setOnClickListener {
             val intent = Intent(context, DetailActivity::class.java)
             intent.putExtra("Object", items[position])
             context?.startActivity(intent)

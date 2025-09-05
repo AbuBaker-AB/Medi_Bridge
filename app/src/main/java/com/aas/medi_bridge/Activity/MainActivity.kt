@@ -1,12 +1,13 @@
 package com.aas.medi_bridge.Activity
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.aas.medi_bridge.Adapter.CategoryAdapter
 import com.aas.medi_bridge.Adapter.TopDoctorAdapter
-import com.aas.medi_bridge.Domain.CategoryModel
+import com.aas.medi_bridge.Domain.DoctorsModel
 import com.aas.medi_bridge.R
 import com.aas.medi_bridge.ViewModel.MainviewModel
 import com.aas.medi_bridge.databinding.ActivityMainBinding
@@ -17,6 +18,9 @@ class MainActivity : BaseActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel = MainviewModel()
 
+    private var allDoctors: MutableList<DoctorsModel> = mutableListOf()
+    private lateinit var doctorAdapter: TopDoctorAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -24,17 +28,26 @@ class MainActivity : BaseActivity() {
 
         intCategroy()
         initDoctor()
-
+        setupBottomNavigation()
     }
 
     private fun initDoctor() {
         binding.progressBarTopDoctor.visibility = View.VISIBLE
-        viewModel.doctors.observe(this,{
-            binding.recyclerViewTopDoctor.layoutManager= LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL,false)
-            binding.recyclerViewTopDoctor.adapter= TopDoctorAdapter(it)
-            binding.progressBarTopDoctor.visibility= View.GONE
+        viewModel.doctors.observe(this, { doctorsList ->
+            allDoctors = doctorsList
+            doctorAdapter = TopDoctorAdapter(allDoctors)
+            binding.recyclerViewTopDoctor.layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
+            binding.recyclerViewTopDoctor.adapter = doctorAdapter
+            binding.progressBarTopDoctor.visibility = View.GONE
         })
         viewModel.loadDoctors()
+
+        binding.doctorListTxt.setOnClickListener {
+            val intent = Intent(this, TopDoctorsActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Search functionality moved to SearchActivity via bottom navigation
     }
 
     private fun intCategroy() {
@@ -46,5 +59,13 @@ class MainActivity : BaseActivity() {
 
         })
         viewModel.loadCategory()
+    }
+
+    private fun setupBottomNavigation() {
+        // Set click listener for search button using the ID we added
+        binding.searchLayout.setOnClickListener {
+            val intent = Intent(this, SearchActivity::class.java)
+            startActivity(intent)
+        }
     }
 }

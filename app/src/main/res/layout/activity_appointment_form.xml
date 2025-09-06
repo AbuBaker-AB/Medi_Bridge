@@ -262,6 +262,51 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/tv_email_label" />
 
+            <!-- Available Dates -->
+            <TextView
+                android:id="@+id/tv_available_dates_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Available Dates *"
+                android:textColor="#1f2937"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/et_email" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/availableDatesRecyclerView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_available_dates_label" />
+
+            <!-- Available Times -->
+            <TextView
+                android:id="@+id/tv_available_times_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Available Times *"
+                android:textColor="#1f2937"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:layout_marginTop="20dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/availableDatesRecyclerView" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/availableTimesRecyclerView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_available_times_label" />
+
             <!-- Message -->
             <TextView
                 android:id="@+id/tv_message_label"
@@ -273,7 +318,7 @@
                 android:textSize="14sp"
                 android:layout_marginTop="20dp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/et_email" />
+                app:layout_constraintTop_toBottomOf="@id/availableTimesRecyclerView" />
 
             <EditText
                 android:id="@+id/et_message"

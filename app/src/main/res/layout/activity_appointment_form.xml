@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#f3f4f6"
-    tools:context=".Activity.MedicalAppointmentActivity">
+    tools:context=".Activity.AppointmentFormActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -297,14 +297,14 @@
                 app:layout_constraintTop_toBottomOf="@id/tv_message_label" />
 
             <!-- Submit Button -->
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btn_submit"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:background="@drawable/submit_button_background"
                 android:minHeight="48dp"
-                android:text="Submit"
+                android:text="Confirm Appointment"
                 android:textColor="#ffffff"
                 android:textSize="16sp"
                 android:textStyle="bold"

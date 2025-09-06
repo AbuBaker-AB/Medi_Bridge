@@ -54,9 +54,14 @@ class MainActivity : BaseActivity() {
 
     private fun intCategroy() {
         binding.progressBarCategory.visibility = View.VISIBLE
-        viewModel.category.observe(this,{
-            binding.viewCategory.layoutManager= LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false)
-            binding.viewCategory.adapter= CategoryAdapter(it)
+        viewModel.category.observe(this, { categoryList ->
+            binding.viewCategory.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+            binding.viewCategory.adapter = CategoryAdapter(categoryList.toMutableList()) { category ->
+                // On specialization click, start DoctorListActivity
+                val intent = Intent(this, DoctorListActivity::class.java)
+                intent.putExtra("specialization", category.Name)
+                startActivity(intent)
+            }
             binding.progressBarCategory.visibility = View.GONE
 
         })

@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.aas.medi_bridge.Activity.DetailActivity
 import com.aas.medi_bridge.Domain.DoctorsModel
 import com.aas.medi_bridge.databinding.ViewholderTopDoctor2Binding
-import com.aas.medi_bridge.databinding.ViewholderTopDoctorBinding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -33,7 +32,6 @@ class TopDoctorAdapter2(val items: MutableList<DoctorsModel>): RecyclerView.Adap
         holder.binding.specialTxt.text = items[position].specialization
         holder.binding.scoreTxt.text = items[position].rating.toString()
         holder.binding.ratingBar.rating = items[position].rating.toFloat()
-        holder.binding.scoreTxt.text = items[position].rating.toString()
         holder.binding.degreeTxt.text = "Professional Doctor"
 
         // Get doctor image or fallback to first chamber image

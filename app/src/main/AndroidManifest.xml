@@ -41,6 +41,9 @@
         <activity
             android:name=".Activity.MainActivity"
             android:exported="true" />
+        <activity
+            android:name=".Activity.DoctorListActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -15,21 +15,272 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.aas.medi_bridge.Adapter.DateChipAdapter
+import com.aas.medi_bridge.Adapter.TimeChipAdapter
+import com.aas.medi_bridge.Domain.DoctorsModel
 import com.aas.medi_bridge.R
 import com.aas.medi_bridge.databinding.ActivityAppointmentFormBinding
+import java.text.SimpleDateFormat
 import java.util.*
 
 class AppointmentFormActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAppointmentFormBinding
+    private lateinit var item: DoctorsModel
+    private var selectedDate: String = ""
+    private var selectedTime: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAppointmentFormBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Get doctor data from intent
+        item = intent.getParcelableExtra("Object") ?: return
+
+        setupDoctorInfo()
         setupSpinners()
         setupForm()
         setupDatePicker()
+        setupAvailableDatesAndTimes()
+    }
+
+    private fun setupDoctorInfo() {
+        // Set doctor name in the form
+        binding.tvDoctorName.text = item.name
+
+        // Load doctor image with corner radius
+        var imageUrl = item.image
+
+        // Fallback to first chamber image if main image is blank
+        if (imageUrl.isBlank() && item.chambers.isNotEmpty()) {
+            imageUrl = item.chambers[0].image
+        }
+
+        // Convert Imgur URL to direct image URL if needed
+        if (imageUrl.isNotBlank() && imageUrl.contains("imgur.com") && !imageUrl.contains("i.imgur.com")) {
+            val imageId = imageUrl.substringAfterLast("/")
+            imageUrl = "https://i.imgur.com/$imageId.jpg"
+        }
+
+        // Load image with corner radius using Glide
+        com.bumptech.glide.Glide.with(this)
+            .load(imageUrl)
+            .transform(
+                com.bumptech.glide.load.resource.bitmap.CenterCrop(),
+                com.bumptech.glide.load.resource.bitmap.RoundedCorners(24)
+            )
+            .placeholder(R.drawable.blank_profile)
+            .error(R.drawable.blank_profile)
+            .into(binding.ivMedicalIcon)
+    }
+
+    private fun setupAvailableDatesAndTimes() {
+        // Debug: Log the visiting hours from database
+        val visitingHour = when {
+            item.visiting_hour.isNotBlank() -> item.visiting_hour
+            item.chambers.isNotEmpty() && item.chambers[0].visiting_hour.isNotBlank() -> item.chambers[0].visiting_hour
+            else -> "9am to 5pm"
+        }
+        android.util.Log.d("AppointmentForm", "Raw visiting hours from database: '$visitingHour'")
+
+        val availableDates = generateAvailableDates()
+        val dateAdapter = DateChipAdapter(availableDates) { date ->
+            selectedDate = date
+            android.util.Log.d("AppointmentForm", "Selected date: $date")
+
+            // Update available times for selected date
+            val availableTimes = getAvailableTimesForDoctor()
+            val timeAdapter = TimeChipAdapter(availableTimes) { time ->
+                selectedTime = time
+                android.util.Log.d("AppointmentForm", "Selected time: $time")
+            }
+            binding.availableTimesRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+            binding.availableTimesRecyclerView.adapter = timeAdapter
+        }
+
+        binding.availableDatesRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.availableDatesRecyclerView.adapter = dateAdapter
+
+        // Show available times immediately (not just when date is selected)
+        val availableTimes = getAvailableTimesForDoctor()
+        android.util.Log.d("AppointmentForm", "Generated time slots: $availableTimes")
+        val timeAdapter = TimeChipAdapter(availableTimes) { time ->
+            selectedTime = time
+            android.util.Log.d("AppointmentForm", "Selected time: $time")
+        }
+        binding.availableTimesRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.availableTimesRecyclerView.adapter = timeAdapter
+    }
+
+    private fun generateAvailableDates(): List<String> {
+        val dateFormat = SimpleDateFormat("MMM dd", Locale.getDefault())
+        val dates = mutableListOf<String>()
+        val calendar = Calendar.getInstance()
+
+        // Get closed days from visiting hours
+        val closedDays = getClosedDaysFromVisitingHours()
+
+        // Generate next 14 days excluding closed days
+        for (i in 0 until 14) {
+            val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
+            val dayName = when (dayOfWeek) {
+                Calendar.SUNDAY -> "sunday"
+                Calendar.MONDAY -> "monday"
+                Calendar.TUESDAY -> "tuesday"
+                Calendar.WEDNESDAY -> "wednesday"
+                Calendar.THURSDAY -> "thursday"
+                Calendar.FRIDAY -> "friday"
+                Calendar.SATURDAY -> "saturday"
+                else -> ""
+            }
+
+            // Only add if not a closed day
+            if (!closedDays.contains(dayName)) {
+                dates.add(dateFormat.format(calendar.time))
+            }
+
+            calendar.add(Calendar.DAY_OF_MONTH, 1)
+        }
+
+        return dates
+    }
+
+    private fun getClosedDaysFromVisitingHours(): List<String> {
+        val visitingHour = when {
+            item.visiting_hour.isNotBlank() -> item.visiting_hour
+            item.chambers.isNotEmpty() && item.chambers[0].visiting_hour.isNotBlank() -> item.chambers[0].visiting_hour
+            else -> ""
+        }
+
+        val closedDays = mutableListOf<String>()
+
+        if (visitingHour.contains("closed:", ignoreCase = true)) {
+            val closedPart = visitingHour.substringAfter("closed:", "").trim()
+            when {
+                closedPart.contains("friday", ignoreCase = true) -> closedDays.add("friday")
+                closedPart.contains("saturday", ignoreCase = true) -> closedDays.add("saturday")
+                closedPart.contains("sunday", ignoreCase = true) -> closedDays.add("sunday")
+                closedPart.contains("monday", ignoreCase = true) -> closedDays.add("monday")
+                closedPart.contains("tuesday", ignoreCase = true) -> closedDays.add("tuesday")
+                closedPart.contains("wednesday", ignoreCase = true) -> closedDays.add("wednesday")
+                closedPart.contains("thursday", ignoreCase = true) -> closedDays.add("thursday")
+            }
+        }
+
+        return closedDays
+    }
+
+    private fun getAvailableTimesForDoctor(): List<String> {
+        val visitingHour = when {
+            item.visiting_hour.isNotBlank() -> item.visiting_hour
+            item.chambers.isNotEmpty() && item.chambers[0].visiting_hour.isNotBlank() -> item.chambers[0].visiting_hour
+            else -> "9am to 5pm"
+        }
+
+        return parseVisitingHoursToTimeSlots(visitingHour)
+    }
+
+    private fun parseVisitingHoursToTimeSlots(visitingHours: String): List<String> {
+        val timeSlots = mutableListOf<String>()
+
+        android.util.Log.d("AppointmentForm", "Parsing visiting hours: '$visitingHours'")
+
+        try {
+            // Clean the visiting hours string - remove parentheses content first
+            val cleanHours = visitingHours.replace(Regex("\\([^)]*\\)"), "").trim()
+            android.util.Log.d("AppointmentForm", "Cleaned hours: '$cleanHours'")
+
+            // Handle multiple time ranges separated by "&"
+            val timeRanges = cleanHours.split("&")
+            android.util.Log.d("AppointmentForm", "Time ranges: $timeRanges")
+
+            for (range in timeRanges) {
+                val trimmedRange = range.trim()
+                android.util.Log.d("AppointmentForm", "Processing range: '$trimmedRange'")
+
+                // Extract start and end times using " to " as separator
+                val parts = trimmedRange.split(" to ")
+                if (parts.size == 2) {
+                    val startTimeRaw = parts[0].trim()
+                    val endTimeRaw = parts[1].trim()
+
+                    android.util.Log.d("AppointmentForm", "Start time raw: '$startTimeRaw', End time raw: '$endTimeRaw'")
+
+                    val startTime = normalizeTimeFormat(startTimeRaw)
+                    val endTime = normalizeTimeFormat(endTimeRaw)
+
+                    android.util.Log.d("AppointmentForm", "Normalized - Start: '$startTime', End: '$endTime'")
+
+                    val slots = generateTimeSlots(startTime, endTime)
+                    android.util.Log.d("AppointmentForm", "Generated slots for range: $slots")
+                    timeSlots.addAll(slots)
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("AppointmentForm", "Error parsing visiting hours: ${e.message}")
+            // Fallback to default times
+            timeSlots.addAll(listOf("9:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:00 PM", "4:00 PM"))
+        }
+
+        val result = timeSlots.ifEmpty { listOf("9:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:00 PM", "4:00 PM") }
+        android.util.Log.d("AppointmentForm", "Final time slots: $result")
+        return result
+    }
+
+    private fun normalizeTimeFormat(time: String): String {
+        // Remove any extra spaces and unwanted characters but keep the basic time format
+        val cleaned = time.trim().replace(Regex("\\s+"), " ")
+
+        android.util.Log.d("AppointmentForm", "Normalizing time: '$time' -> '$cleaned'")
+
+        // Handle different time formats from database
+        return when {
+            // Format: "7pm" -> "7:00 PM"
+            cleaned.matches(Regex("\\d{1,2}pm", RegexOption.IGNORE_CASE)) -> {
+                val hour = cleaned.replace(Regex("[pm]", RegexOption.IGNORE_CASE), "")
+                "$hour:00 PM"
+            }
+            // Format: "7am" -> "7:00 AM"
+            cleaned.matches(Regex("\\d{1,2}am", RegexOption.IGNORE_CASE)) -> {
+                val hour = cleaned.replace(Regex("[am]", RegexOption.IGNORE_CASE), "")
+                "$hour:00 AM"
+            }
+            // Format: "10:30pm" -> "10:30 PM"
+            cleaned.matches(Regex("\\d{1,2}:\\d{2}pm", RegexOption.IGNORE_CASE)) -> {
+                cleaned.replace(Regex("pm", RegexOption.IGNORE_CASE), " PM")
+            }
+            // Format: "10:30am" -> "10:30 AM"
+            cleaned.matches(Regex("\\d{1,2}:\\d{2}am", RegexOption.IGNORE_CASE)) -> {
+                cleaned.replace(Regex("am", RegexOption.IGNORE_CASE), " AM")
+            }
+            // If already in correct format, return as is
+            else -> cleaned
+        }.also {
+            android.util.Log.d("AppointmentForm", "Normalized result: '$it'")
+        }
+    }
+
+    private fun generateTimeSlots(startTime: String, endTime: String): List<String> {
+        val timeSlots = mutableListOf<String>()
+        val sdf = SimpleDateFormat("h:mm a", Locale.getDefault())
+
+        try {
+            val start = sdf.parse(startTime) ?: return emptyList()
+            val end = sdf.parse(endTime) ?: return emptyList()
+
+            val calendar = Calendar.getInstance()
+            calendar.time = start
+
+            while (calendar.time.before(end)) {
+                timeSlots.add(sdf.format(calendar.time))
+                calendar.add(Calendar.MINUTE, 15) // 15-minute intervals
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("AppointmentForm", "Error generating time slots: ${e.message}")
+        }
+
+        return timeSlots
     }
 
     private fun setupSpinners() {
@@ -98,14 +349,6 @@ class AppointmentFormActivity : AppCompatActivity() {
     }
 
     private fun setupForm() {
-        // Retrieve doctor info from intent
-        val doctorName = intent.getStringExtra("doctor_name")
-        val doctorSpecialization = intent.getStringExtra("doctor_specialization")
-        val selectedDate = intent.getStringExtra("selected_date")
-        val selectedTime = intent.getStringExtra("selected_time")
-
-        binding.tvDoctorName.text = doctorName ?: "Doctor"
-
         // Set up red asterisks for required fields
         setupRedAsterisks()
 
@@ -114,12 +357,12 @@ class AppointmentFormActivity : AppCompatActivity() {
             if (validateForm()) {
                 collectFormData()
 
-                // Show appointment confirmation notification ONLY after successful form submission
+                // Show appointment confirmation notification using actual doctor data
                 showAppointmentConfirmationNotification(
-                    doctorName ?: "Unknown Doctor",
-                    doctorSpecialization ?: "General",
-                    selectedDate ?: "TBD",
-                    selectedTime ?: "TBD"
+                    item.name,
+                    item.specialization,
+                    selectedDate,
+                    selectedTime
                 )
 
                 finish()
@@ -170,6 +413,9 @@ class AppointmentFormActivity : AppCompatActivity() {
         binding.tvDobLabel.text = createLabelWithRedAsterisk("Date of Birth")
         binding.tvGenderLabel.text = createLabelWithRedAsterisk("Gender")
         binding.tvContactLabel.text = createLabelWithRedAsterisk("Contact Number")
+        // Add red asterisks for Available Dates and Available Times
+        binding.tvAvailableDatesLabel.text = createLabelWithRedAsterisk("Available Dates")
+        binding.tvAvailableTimesLabel.text = createLabelWithRedAsterisk("Available Times")
     }
 
     private fun validateForm(): Boolean {
@@ -202,6 +448,14 @@ class AppointmentFormActivity : AppCompatActivity() {
                 Toast.makeText(this, "Please select gender", Toast.LENGTH_SHORT).show()
                 return false
             }
+            selectedDate.isEmpty() -> {
+                Toast.makeText(this, "Please select an appointment date", Toast.LENGTH_SHORT).show()
+                return false
+            }
+            selectedTime.isEmpty() -> {
+                Toast.makeText(this, "Please select an appointment time", Toast.LENGTH_SHORT).show()
+                return false
+            }
         }
         return true
     }
@@ -215,9 +469,9 @@ class AppointmentFormActivity : AppCompatActivity() {
         val email = binding.etEmail.text.toString().trim()
         val message = binding.etMessage.text.toString().trim()
 
-        val doctorName = intent.getStringExtra("doctor_name") ?: "Unknown Doctor"
-        val selectedDate = intent.getStringExtra("selected_date") ?: "TBD"
-        val selectedTime = intent.getStringExtra("selected_time") ?: "TBD"
+        // Use the selected date and time from the RecyclerViews
+        val doctorName = item.name
+        val doctorSpecialization = item.specialization
 
         // Log the collected data
         android.util.Log.d("AppointmentForm", "=== Appointment Data ===")

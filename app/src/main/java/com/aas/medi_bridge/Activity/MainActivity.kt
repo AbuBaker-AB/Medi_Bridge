@@ -35,7 +35,9 @@ class MainActivity : BaseActivity() {
         binding.progressBarTopDoctor.visibility = View.VISIBLE
         viewModel.doctors.observe(this, { doctorsList ->
             allDoctors = doctorsList
-            doctorAdapter = TopDoctorAdapter(allDoctors)
+            // Show only first 4 doctors in the main screen
+            val limitedDoctors = allDoctors.take(4).toMutableList()
+            doctorAdapter = TopDoctorAdapter(limitedDoctors)
             binding.recyclerViewTopDoctor.layoutManager = LinearLayoutManager(this@MainActivity, LinearLayoutManager.HORIZONTAL, false)
             binding.recyclerViewTopDoctor.adapter = doctorAdapter
             binding.progressBarTopDoctor.visibility = View.GONE

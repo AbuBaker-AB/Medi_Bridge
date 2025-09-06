@@ -170,7 +170,6 @@
                         android:orientation="vertical">
 
                         <ImageView
-
                             android:layout_width="110dp"
                             android:layout_height="60dp"
                             android:layout_gravity="center"
@@ -179,7 +178,6 @@
                             app:srcCompat="@drawable/call" />
 
                         <TextView
-
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
@@ -198,7 +196,6 @@
                         android:orientation="vertical">
 
                         <ImageView
-
                             android:layout_width="110dp"
                             android:layout_height="60dp"
                             android:layout_gravity="center"
@@ -207,7 +204,6 @@
                             app:srcCompat="@drawable/direction" />
 
                         <TextView
-
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
@@ -218,8 +214,6 @@
                             android:textStyle="bold" />
                     </LinearLayout>
 
-
-
                     <LinearLayout
                         android:id="@+id/shareBtn"
                         android:layout_width="0dp"
@@ -228,7 +222,6 @@
                         android:orientation="vertical">
 
                         <ImageView
-
                             android:layout_width="110dp"
                             android:layout_height="60dp"
                             android:layout_gravity="center"
@@ -237,7 +230,6 @@
                             app:srcCompat="@drawable/share" />
 
                         <TextView
-
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
@@ -250,45 +242,6 @@
 
                 </LinearLayout>
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginTop="24dp"
-                    android:text="Available Dates"
-                    android:textColor="@color/black"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/availableDatesRecyclerView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginTop="12dp"
-                    android:orientation="horizontal" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginTop="20dp"
-                    android:text="Available Times"
-                    android:textColor="@color/black"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/availableTimesRecyclerView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginTop="12dp"
-                    android:layout_marginBottom="16dp" />
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/makeBtn"

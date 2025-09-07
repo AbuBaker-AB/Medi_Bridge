@@ -1,337 +1,401 @@
 package com.aas.medi_bridge.Activity
 
-import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.aas.medi_bridge.Adapter.AppointmentAdapter
-import com.aas.medi_bridge.Domain.AppointmentModel
-import com.aas.medi_bridge.Domain.DoctorModel
-import com.aas.medi_bridge.databinding.ActivityDoctorBinding
-import java.text.SimpleDateFormat
-import java.util.*
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.AppCompatButton
+import androidx.cardview.widget.CardView
+import androidx.core.content.edit
+import com.aas.medi_bridge.R
+import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.*
 
-class DoctorActivity : BaseActivity() {
+class DoctorActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityDoctorBinding
-    private var isLoginMode = true
+    private lateinit var backBtn: ImageView
+    private lateinit var formTitle: TextView
+    private lateinit var formSubtitle: TextView
+    private lateinit var loginContainer: CardView
+
+    // Login fields
+    private lateinit var loginFieldsContainer: LinearLayout
+    private lateinit var loginNameEditText: TextInputEditText
+    private lateinit var loginIdEditText: TextInputEditText
+
+    // Signup fields
+    private lateinit var signupFieldsContainer: LinearLayout
+    private lateinit var signupNameEditText: TextInputEditText
+    private lateinit var signupEmailEditText: TextInputEditText
+    private lateinit var signupDegreesEditText: TextInputEditText
+    private lateinit var signupSpecialtyEditText: TextInputEditText
+    private lateinit var signupDesignationEditText: TextInputEditText
+    private lateinit var signupChamberNameEditText: TextInputEditText
+    private lateinit var signupChamberAddressEditText: TextInputEditText
+    private lateinit var signupVisitingHourEditText: TextInputEditText
+    private lateinit var signupAppointmentNumberEditText: TextInputEditText
+
+    // Action buttons
+    private lateinit var primaryActionBtn: AppCompatButton
+    private lateinit var switchModeText: TextView
+
     private lateinit var sharedPreferences: SharedPreferences
-    private var currentDoctor: DoctorModel? = null
-    private lateinit var appointmentAdapter: AppointmentAdapter
-    private val appointments = mutableListOf<AppointmentModel>()
+    private lateinit var database: DatabaseReference
+
+    private var isLoginMode = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityDoctorBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_doctor)
 
-        sharedPreferences = getSharedPreferences("DoctorPrefs", Context.MODE_PRIVATE)
-
-        setupUI()
-        checkLoginStatus()
-        loadSampleAppointments()
+        initViews()
+        initFirebase()
+        setupClickListeners()
+        checkIfLoggedIn()
     }
 
-    private fun setupUI() {
-        binding.apply {
-            // Back button
-            backBtn.setOnClickListener { finish() }
+    private fun initViews() {
+        backBtn = findViewById(R.id.backBtn)
+        formTitle = findViewById(R.id.formTitle)
+        formSubtitle = findViewById(R.id.formSubtitle)
+        loginContainer = findViewById(R.id.loginContainer)
 
-            // Switch between login and signup modes
-            switchModeText.setOnClickListener {
-                toggleAuthMode()
-            }
+        // Login fields
+        loginFieldsContainer = findViewById(R.id.loginFieldsContainer)
+        loginNameEditText = findViewById(R.id.loginNameEditText)
+        loginIdEditText = findViewById(R.id.loginIdEditText)
 
-            // Primary action button (Login/Signup)
-            primaryActionBtn.setOnClickListener {
-                if (isLoginMode) {
-                    performLogin()
-                } else {
-                    performSignup()
-                }
-            }
+        // Signup fields
+        signupFieldsContainer = findViewById(R.id.signupFieldsContainer)
+        signupNameEditText = findViewById(R.id.signupNameEditText)
+        signupEmailEditText = findViewById(R.id.signupEmailEditText)
+        signupDegreesEditText = findViewById(R.id.signupDegreesEditText)
+        signupSpecialtyEditText = findViewById(R.id.signupSpecialtyEditText)
+        signupDesignationEditText = findViewById(R.id.signupDesignationEditText)
+        signupChamberNameEditText = findViewById(R.id.signupChamberNameEditText)
+        signupChamberAddressEditText = findViewById(R.id.signupChamberAddressEditText)
+        signupVisitingHourEditText = findViewById(R.id.signupVisitingHourEditText)
+        signupAppointmentNumberEditText = findViewById(R.id.signupAppointmentNumberEditText)
 
-            // Logout button
-            logoutBtn.setOnClickListener {
-                performLogout()
+        // Action buttons
+        primaryActionBtn = findViewById(R.id.primaryActionBtn)
+        switchModeText = findViewById(R.id.switchModeText)
+
+        sharedPreferences = getSharedPreferences("DoctorPrefs", MODE_PRIVATE)
+    }
+
+    private fun initFirebase() {
+        database = FirebaseDatabase.getInstance().reference
+    }
+
+    private fun setupClickListeners() {
+        backBtn.setOnClickListener { finish() }
+
+        primaryActionBtn.setOnClickListener {
+            if (isLoginMode) {
+                performLogin()
+            } else {
+                performSignup()
             }
         }
 
-        setupAppointmentsRecyclerView()
+        switchModeText.setOnClickListener {
+            toggleMode()
+        }
     }
 
-    private fun setupAppointmentsRecyclerView() {
-        appointmentAdapter = AppointmentAdapter(appointments)
-        binding.appointmentsRecyclerView.layoutManager = LinearLayoutManager(this)
-        binding.appointmentsRecyclerView.adapter = appointmentAdapter
-    }
-
-    private fun checkLoginStatus() {
-        val doctorId = sharedPreferences.getString("doctor_id", null)
+    private fun checkIfLoggedIn() {
         val doctorName = sharedPreferences.getString("doctor_name", null)
+        val doctorId = sharedPreferences.getString("doctor_id", null)
 
-        if (!doctorId.isNullOrBlank() && !doctorName.isNullOrBlank()) {
-            // Doctor is logged in
-            currentDoctor = DoctorModel(
-                id = doctorId,
-                name = doctorName,
-                email = sharedPreferences.getString("doctor_email", "") ?: "",
-                specialization = sharedPreferences.getString("doctor_specialization", "") ?: "",
-                isRegistered = true
-            )
-            showDashboard()
-        } else {
-            showAuthForm()
+        if (!doctorName.isNullOrEmpty() && !doctorId.isNullOrEmpty()) {
+            navigateToDashboard()
         }
     }
 
-    private fun toggleAuthMode() {
+    private fun toggleMode() {
         isLoginMode = !isLoginMode
 
-        binding.apply {
-            if (isLoginMode) {
-                // Switch to Login mode
-                formTitle.text = "Login to Your Account"
-                formSubtitle.text = "Enter your credentials to access doctor portal"
-                loginFieldsContainer.visibility = View.VISIBLE
-                signupFieldsContainer.visibility = View.GONE
-                primaryActionBtn.text = "Login"
-                switchModeText.text = "Don't have an account? Sign Up"
-            } else {
-                // Switch to Signup mode
-                formTitle.text = "Create Doctor Account"
-                formSubtitle.text = "Fill in your details to register as a doctor"
-                loginFieldsContainer.visibility = View.VISIBLE
-                signupFieldsContainer.visibility = View.VISIBLE
-                primaryActionBtn.text = "Sign Up"
-                switchModeText.text = "Already have an account? Login"
-            }
+        if (isLoginMode) {
+            // Switch to login mode
+            formTitle.text = getString(R.string.login_to_account)
+            formSubtitle.text = getString(R.string.enter_credentials)
+            primaryActionBtn.text = getString(R.string.login)
+            switchModeText.text = getString(R.string.dont_have_account_signup)
+            loginFieldsContainer.visibility = View.VISIBLE
+            signupFieldsContainer.visibility = View.GONE
+        } else {
+            // Switch to signup mode
+            formTitle.text = getString(R.string.create_new_account)
+            formSubtitle.text = getString(R.string.fill_info_register)
+            primaryActionBtn.text = getString(R.string.signup)
+            switchModeText.text = getString(R.string.already_have_account_login)
+            loginFieldsContainer.visibility = View.GONE
+            signupFieldsContainer.visibility = View.VISIBLE
         }
     }
 
     private fun performLogin() {
-        val name = binding.loginNameEditText.text.toString().trim()
-        val doctorId = binding.loginIdEditText.text.toString().trim()
+        val name = loginNameEditText.text.toString().trim()
+        val id = loginIdEditText.text.toString().trim()
 
-        if (name.isEmpty() || doctorId.isEmpty()) {
-            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+        if (name.isEmpty() || id.isEmpty()) {
+            Toast.makeText(this, "Please fill in both Doctor Name and Doctor ID", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Check if doctor is registered (simulate database check)
-        val isRegistered = checkDoctorRegistration(name, doctorId)
+        // First check the new registrations node ("doctors")
+        database.child("doctors").child(id).addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    handleLoginFromNewRegistrations(snapshot, name, id)
+                } else {
+                    // If not found in new registrations, check original JSON structure ("Doctors")
+                    checkOriginalDoctorsNode(name, id)
+                }
+            }
 
-        if (isRegistered) {
-            // Login successful
-            val doctor = DoctorModel(
-                id = doctorId,
-                name = name,
-                email = "dr.${name.replace(" ", "").lowercase()}@medibbridge.com",
-                specialization = "General Medicine", // Default or fetch from database
-                isRegistered = true
-            )
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@DoctorActivity, "Login failed: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
 
-            saveLoginSession(doctor)
-            currentDoctor = doctor
-            showDashboard()
-            Toast.makeText(this, "Login successful! Welcome, Dr. $name", Toast.LENGTH_SHORT).show()
+    private fun handleLoginFromNewRegistrations(snapshot: DataSnapshot, name: String, id: String) {
+        val doctorName = snapshot.child("name").getValue(String::class.java)
+        val approved = snapshot.child("approved").getValue(Boolean::class.java) ?: false
+        val status = snapshot.child("status").getValue(String::class.java) ?: "pending"
+
+        android.util.Log.d("DoctorLogin", "New registration found: $doctorName, approved: $approved, status: $status")
+
+        if (doctorName != null && doctorName.equals(name, ignoreCase = true)) {
+            when {
+                status == "rejected" -> {
+                    Toast.makeText(this, "Your registration has been rejected. Please contact admin.", Toast.LENGTH_LONG).show()
+                }
+                !approved || status == "pending" -> {
+                    Toast.makeText(this, "Your account is pending admin approval. Please wait for approval notification.", Toast.LENGTH_LONG).show()
+                }
+                status == "approved" -> {
+                    saveLoginInfo(doctorName, id) // Now doctorName is guaranteed to be non-null
+                    navigateToDashboard()
+                    Toast.makeText(this, "Welcome back, $doctorName!", Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    Toast.makeText(this, "Account status unknown. Please contact admin.", Toast.LENGTH_SHORT).show()
+                }
+            }
         } else {
-            Toast.makeText(this, "Doctor not found. Please sign up first.", Toast.LENGTH_SHORT).show()
-            toggleAuthMode() // Switch to signup mode
+            Toast.makeText(this, "Invalid credentials. Please check your name and ID.", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun checkOriginalDoctorsNode(name: String, id: String) {
+        // Check in the original "Doctors" node from JSON
+        database.child("Doctors").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var doctorFound = false
+
+                for (childSnapshot in snapshot.children) {
+                    val doctorName = childSnapshot.child("name").getValue(String::class.java)
+                    val doctorId = childSnapshot.child("id").getValue(String::class.java)
+
+                    android.util.Log.d("DoctorLogin", "Checking original doctor: $doctorName, ID: $doctorId")
+
+                    if (doctorId != null && doctorName != null && doctorId == id && doctorName.equals(name, ignoreCase = true)) {
+                        // Original doctors from JSON are pre-approved
+                        saveLoginInfo(doctorName, id)
+                        navigateToDashboard()
+                        Toast.makeText(this@DoctorActivity, "Welcome back, $doctorName!", Toast.LENGTH_SHORT).show()
+                        doctorFound = true
+                        break
+                    }
+                }
+
+                if (!doctorFound) {
+                    Toast.makeText(this@DoctorActivity, "Doctor ID not found. Please sign up first.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@DoctorActivity, "Login failed: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun performSignup() {
-        val name = binding.loginNameEditText.text.toString().trim()
-        val doctorId = binding.loginIdEditText.text.toString().trim()
-        val email = binding.signupEmailEditText.text.toString().trim()
-        val phone = binding.signupPhoneEditText.text.toString().trim()
-        val specialization = binding.signupSpecializationEditText.text.toString().trim()
-        val experience = binding.signupExperienceEditText.text.toString().trim()
+        // Get the doctor name from the signup field
+        val name = signupNameEditText.text.toString().trim()
+        val email = signupEmailEditText.text.toString().trim()
+        val degrees = signupDegreesEditText.text.toString().trim()
+        val specialty = signupSpecialtyEditText.text.toString().trim()
+        val designation = signupDesignationEditText.text.toString().trim()
+        val chamberName = signupChamberNameEditText.text.toString().trim()
+        val chamberAddress = signupChamberAddressEditText.text.toString().trim()
+        val visitingHour = signupVisitingHourEditText.text.toString().trim()
+        val appointmentNumber = signupAppointmentNumberEditText.text.toString().trim()
 
-        if (name.isEmpty() || doctorId.isEmpty() || email.isEmpty() ||
-            phone.isEmpty() || specialization.isEmpty() || experience.isEmpty()) {
-            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+        // Validate all required fields
+        if (name.isEmpty() || email.isEmpty() || degrees.isEmpty() || specialty.isEmpty() ||
+            designation.isEmpty() || chamberName.isEmpty() ||
+            chamberAddress.isEmpty() || visitingHour.isEmpty() || appointmentNumber.isEmpty()) {
+            Toast.makeText(this, "Please fill in all required fields marked with *", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Validate email format
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_SHORT).show()
-            return
-        }
+        // Generate unique doctor ID
+        val doctorId = generateDoctorId()
 
-        // Create new doctor account
-        val doctor = DoctorModel(
-            id = doctorId,
-            name = name,
-            email = email,
-            phone = phone,
-            specialization = specialization,
-            experience = experience.toIntOrNull() ?: 0,
-            isRegistered = true
-        )
+        // Create a temporary password for Firebase Auth (doctor will use custom login)
+        val tempPassword = "temp${doctorId}123"
 
-        // Save doctor registration (simulate database save)
-        saveRegistration(doctor)
-        saveLoginSession(doctor)
-        currentDoctor = doctor
-        showDashboard()
-        Toast.makeText(this, "Registration successful! Welcome, Dr. $name", Toast.LENGTH_SHORT).show()
-    }
+        // Use Firebase Auth to create the user account
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, tempPassword)
+            .addOnSuccessListener { authResult ->
+                // Auth account created successfully, now save doctor data
+                val doctorData = hashMapOf(
+                    "name" to name,
+                    "id" to doctorId,
+                    "email" to email,
+                    "degrees" to degrees,
+                    "specialization" to specialty,
+                    "specialty" to specialty, // Keep both for compatibility
+                    "designation" to designation,
+                    "city" to extractCityFromWorkplace(chamberAddress),
+                    "chambers" to listOf(
+                        hashMapOf(
+                            "name" to chamberName,
+                            "address" to chamberAddress,
+                            "visiting_hour" to visitingHour,
+                            "appointment_number" to appointmentNumber,
+                            "location" to "", // Can be added later
+                            "image" to "" // Can be added later
+                        )
+                    ),
+                    "status" to "pending", // Pending approval
+                    "registrationDate" to System.currentTimeMillis(),
+                    "approved" to false,
+                    "uid" to authResult.user?.uid // Store Firebase Auth UID
+                )
 
-    private fun checkDoctorRegistration(name: String, doctorId: String): Boolean {
-        // Simulate checking if doctor is registered
-        // In a real app, this would check Firebase/database
-        val savedDoctorId = sharedPreferences.getString("registered_doctor_id", null)
-        val savedDoctorName = sharedPreferences.getString("registered_doctor_name", null)
+                // Save to Firebase Database
+                database.child("doctors").child(doctorId).setValue(doctorData)
+                    .addOnSuccessListener {
+                        // Send Doctor ID via email
+                        sendDoctorIdViaEmail(doctorId, email)
 
-        return savedDoctorId == doctorId && savedDoctorName == name
-    }
+                        // Start listening for approval notifications
+                        com.aas.medi_bridge.Service.DoctorNotificationService.startListeningForApproval(this@DoctorActivity, doctorId)
 
-    private fun saveRegistration(doctor: DoctorModel) {
-        // Save registration data (simulate database save)
-        sharedPreferences.edit().apply {
-            putString("registered_doctor_id", doctor.id)
-            putString("registered_doctor_name", doctor.name)
-            putString("registered_doctor_email", doctor.email)
-            putString("registered_doctor_phone", doctor.phone)
-            putString("registered_doctor_specialization", doctor.specialization)
-            putInt("registered_doctor_experience", doctor.experience)
-            apply()
-        }
-    }
+                        // Show the generated Doctor ID to the user
+                        Toast.makeText(this@DoctorActivity,
+                            "Registration successful! Your Doctor ID is: $doctorId\n" +
+                                    "Please save this ID for login. You will be notified once approved.",
+                            Toast.LENGTH_LONG).show()
 
-    private fun saveLoginSession(doctor: DoctorModel) {
-        // Save login session
-        sharedPreferences.edit().apply {
-            putString("doctor_id", doctor.id)
-            putString("doctor_name", doctor.name)
-            putString("doctor_email", doctor.email)
-            putString("doctor_specialization", doctor.specialization)
-            apply()
-        }
-    }
+                        // Also show an alert dialog with the ID so user can copy it
+                        showDoctorIdDialog(doctorId, name)
 
-    private fun performLogout() {
-        // Clear login session
-        sharedPreferences.edit().clear().apply()
-        currentDoctor = null
+                        // Sign out from Firebase Auth (doctor will use custom login)
+                        FirebaseAuth.getInstance().signOut()
 
-        // Reset UI to login form
-        showAuthForm()
-        clearAllFields()
-        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun showAuthForm() {
-        binding.apply {
-            loginContainer.visibility = View.VISIBLE
-            dashboardContainer.visibility = View.GONE
-        }
-    }
-
-    private fun showDashboard() {
-        binding.apply {
-            loginContainer.visibility = View.GONE
-            dashboardContainer.visibility = View.VISIBLE
-
-            currentDoctor?.let { doctor ->
-                welcomeText.text = "Welcome, Dr. ${doctor.name}"
+                        // Clear form and switch to login mode
+                        clearAllFormFields()
+                        toggleMode() // Switch back to login
+                    }
+                    .addOnFailureListener { error ->
+                        Toast.makeText(this@DoctorActivity,
+                            "Failed to save doctor data: ${error.message}",
+                            Toast.LENGTH_SHORT).show()
+                        // Delete the auth account if database save fails
+                        authResult.user?.delete()
+                    }
             }
-        }
-
-        loadAppointments()
+            .addOnFailureListener { error ->
+                when {
+                    error.message?.contains("email address is already in use") == true -> {
+                        Toast.makeText(this@DoctorActivity, "Email already registered", Toast.LENGTH_SHORT).show()
+                    }
+                    error.message?.contains("network error") == true -> {
+                        Toast.makeText(this@DoctorActivity, "Network error. Please check your internet connection.", Toast.LENGTH_SHORT).show()
+                    }
+                    else -> {
+                        Toast.makeText(this@DoctorActivity, "Registration failed: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
     }
 
-    private fun clearAllFields() {
-        binding.apply {
-            loginNameEditText.text?.clear()
-            loginIdEditText.text?.clear()
-            signupEmailEditText.text?.clear()
-            signupPhoneEditText.text?.clear()
-            signupSpecializationEditText.text?.clear()
-            signupExperienceEditText.text?.clear()
-        }
+    private fun generateDoctorId(): String {
+        val timestamp = System.currentTimeMillis().toString().takeLast(6)
+        return "DR${timestamp}"
     }
 
-    private fun loadSampleAppointments() {
-        // Create sample appointments for demo purposes
-        val sampleAppointments = listOf(
-            AppointmentModel(
-                id = "1",
-                patientName = "John Smith",
-                patientPhone = "+1234567890",
-                appointmentDate = "2025-09-08",
-                appointmentTime = "10:00 AM",
-                doctorId = "DOC001",
-                status = "scheduled",
-                symptoms = "Fever and headache for 2 days"
-            ),
-            AppointmentModel(
-                id = "2",
-                patientName = "Sarah Johnson",
-                patientPhone = "+1234567891",
-                appointmentDate = "2025-09-09",
-                appointmentTime = "2:30 PM",
-                doctorId = "DOC001",
-                status = "scheduled",
-                symptoms = "Regular checkup and blood pressure monitoring"
-            ),
-            AppointmentModel(
-                id = "3",
-                patientName = "Mike Wilson",
-                patientPhone = "+1234567892",
-                appointmentDate = "2025-09-10",
-                appointmentTime = "11:15 AM",
-                doctorId = "DOC001",
-                status = "completed",
-                symptoms = "Back pain and muscle stiffness"
-            )
-        )
-
-        appointments.clear()
-        appointments.addAll(sampleAppointments)
-    }
-
-    private fun loadAppointments() {
-        // Filter appointments for current week and current doctor
-        val currentWeekAppointments = appointments.filter { appointment ->
-            appointment.doctorId == currentDoctor?.id && isCurrentWeek(appointment.appointmentDate)
-        }
-
-        if (currentWeekAppointments.isEmpty()) {
-            binding.appointmentsRecyclerView.visibility = View.GONE
-            binding.noAppointmentsCard.visibility = View.VISIBLE
-        } else {
-            binding.appointmentsRecyclerView.visibility = View.VISIBLE
-            binding.noAppointmentsCard.visibility = View.GONE
-
-            appointmentAdapter.appointments.clear()
-            appointmentAdapter.appointments.addAll(currentWeekAppointments)
-            appointmentAdapter.notifyDataSetChanged()
+    private fun extractCityFromWorkplace(workplace: String): String {
+        // Simple city extraction - can be enhanced
+        return when {
+            workplace.contains("Dhaka", ignoreCase = true) -> "Dhaka"
+            workplace.contains("Chittagong", ignoreCase = true) -> "Chittagong"
+            workplace.contains("Sylhet", ignoreCase = true) -> "Sylhet"
+            workplace.contains("Rajshahi", ignoreCase = true) -> "Rajshahi"
+            workplace.contains("Khulna", ignoreCase = true) -> "Khulna"
+            workplace.contains("Barisal", ignoreCase = true) -> "Barisal"
+            workplace.contains("Rangpur", ignoreCase = true) -> "Rangpur"
+            else -> "Other"
         }
     }
 
-    private fun isCurrentWeek(dateString: String): Boolean {
-        return try {
-            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val appointmentDate = sdf.parse(dateString)
-            val currentDate = Date()
+    private fun sendDoctorIdViaEmail(doctorId: String, email: String) {
+        // This would integrate with an email service like SendGrid or Firebase Functions
+        // For now, we'll just log it
+        android.util.Log.d("DoctorSignup", "Doctor ID $doctorId should be sent to $email")
+    }
 
-            val calendar = Calendar.getInstance()
-            calendar.time = currentDate
-            calendar.set(Calendar.DAY_OF_WEEK, calendar.firstDayOfWeek)
-            val weekStart = calendar.time
-
-            calendar.add(Calendar.DAY_OF_YEAR, 6)
-            val weekEnd = calendar.time
-
-            appointmentDate != null && appointmentDate.after(weekStart) && appointmentDate.before(weekEnd)
-        } catch (e: Exception) {
-            false
+    private fun saveLoginInfo(name: String, id: String) {
+        sharedPreferences.edit {
+            putString("doctor_name", name)
+            putString("doctor_id", id)
         }
+    }
+
+    private fun navigateToDashboard() {
+        val intent = Intent(this, DashboardActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
+    private fun showDoctorIdDialog(doctorId: String, doctorName: String) {
+        val alertDialog = androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Registration Successful!")
+            .setMessage("Dear $doctorName,\n\nYour Doctor ID is: $doctorId\n\nPlease save this ID for future login. You will be notified once your account is approved by admin.")
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .create()
+
+        alertDialog.show()
+    }
+
+    private fun clearAllFormFields() {
+        signupNameEditText.text?.clear()
+        signupEmailEditText.text?.clear()
+        signupDegreesEditText.text?.clear()
+        signupSpecialtyEditText.text?.clear()
+        signupDesignationEditText.text?.clear()
+        signupChamberNameEditText.text?.clear()
+        signupChamberAddressEditText.text?.clear()
+        signupVisitingHourEditText.text?.clear()
+        signupAppointmentNumberEditText.text?.clear()
+
+        loginNameEditText.text?.clear()
+        loginIdEditText.text?.clear()
     }
 }

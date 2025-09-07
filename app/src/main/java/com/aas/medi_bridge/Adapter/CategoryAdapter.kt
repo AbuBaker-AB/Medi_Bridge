@@ -8,7 +8,10 @@ import android.content.Context
 import android.view.LayoutInflater
 import com.bumptech.glide.Glide
 
-class CategoryAdapter(val items: MutableList<CategoryModel>):
+class CategoryAdapter(
+    val items: MutableList<CategoryModel>,
+    private val onItemClick: ((CategoryModel) -> Unit)? = null
+):
     RecyclerView.Adapter<CategoryAdapter.ViewHolder>() {
     private lateinit var context: Context
     inner class ViewHolder(val binding: ViewholderCategoryBinding): RecyclerView.ViewHolder(binding.root)
@@ -40,7 +43,10 @@ class CategoryAdapter(val items: MutableList<CategoryModel>):
             .placeholder(android.R.drawable.ic_menu_gallery) // Show placeholder while loading
             .error(android.R.drawable.ic_menu_gallery) // Show error image if loading fails
             .into(holder.binding.img)
-
+        // Add click listener
+        holder.binding.root.setOnClickListener {
+            onItemClick?.invoke(item)
+        }
     }
 
     override fun getItemCount(): Int {

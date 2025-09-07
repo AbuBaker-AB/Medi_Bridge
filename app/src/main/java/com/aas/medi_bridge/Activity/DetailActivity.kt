@@ -1,14 +1,21 @@
 package com.aas.medi_bridge.Activity
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.aas.medi_bridge.Adapter.DateChipAdapter
+import com.aas.medi_bridge.Adapter.TimeChipAdapter
 import com.aas.medi_bridge.Domain.DoctorsModel
 import com.aas.medi_bridge.R
 import com.aas.medi_bridge.databinding.ActivityDetailBinding
 import com.bumptech.glide.Glide
+import java.text.SimpleDateFormat
+import java.util.*
 
 class DetailActivity : BaseActivity() {
     private lateinit var binding: ActivityDetailBinding
@@ -28,11 +35,6 @@ class DetailActivity : BaseActivity() {
         binding.apply {
             titleTxt.text = item.name
             specialTxt.text = item.specialization
-//            patientsTxt.text = item.patients
-//            bioTxt.text = item.bio
-//            addressTxt.text = item.address
-//            experiensTxt.text = "${item.experience} years"
-//            ratingTxt.text = item.rating.toString()
 
             // Debug: Log all doctor data fields to see what's populated
             android.util.Log.d("DetailActivity", "=== Doctor Data Debug ===")
@@ -53,11 +55,6 @@ class DetailActivity : BaseActivity() {
             android.util.Log.d("DetailActivity", "chambers: ${item.chambers.size} items")
             android.util.Log.d("DetailActivity", "========================")
 
-            // Show placeholder text for empty bio
-            if (item.bio.isBlank()) {
-             //   bioTxt.text = "Biography information will be available soon."
-            }
-
             backBtn.setOnClickListener { finish() }
 
             // Add debug logging to verify button initialization
@@ -65,48 +62,7 @@ class DetailActivity : BaseActivity() {
             android.util.Log.d("DetailActivity", "Doctor data - Site: '${item.Site}', Mobile: '${item.Mobile}', Location: '${item.location}'")
 
             // Ensure buttons are clickable
-//            websiteBtn.isClickable = true
-//            messageBtn.isClickable = true
             callBtn.isClickable = true
-//            directionBtn.isClickable = true
-
-//            websiteBtn.setOnClickListener {
-//                android.util.Log.d("DetailActivity", "Website button clicked")
-//                android.util.Log.d("DetailActivity", "Site value: '${item.Site}' (length: ${item.Site.length})")
-//                try {
-//                    // Test with a default website if Site is empty
-//                    val websiteUrl = if (item.Site.isNotEmpty()) {
-//                        item.Site
-//                    } else {
-//                        "https://www.google.com" // Default website for testing
-//                    }
-//                    android.util.Log.d("DetailActivity", "Opening website: $websiteUrl")
-//                    val intent = Intent(Intent.ACTION_VIEW, websiteUrl.toUri())
-//                    startActivity(intent)
-//                } catch (e: Exception) {
-//                    android.util.Log.e("DetailActivity", "Error opening website: ${e.message}")
-//                }
-//            }
-
-//            messageBtn.setOnClickListener {
-//                android.util.Log.d("DetailActivity", "Message button clicked")
-//                android.util.Log.d("DetailActivity", "Mobile value: '${item.Mobile}' (length: ${item.Mobile.length})")
-//                try {
-//                    // Test with a default number if Mobile is empty
-//                    val phoneNumber = if (item.Mobile.isNotEmpty()) {
-//                        item.Mobile
-//                    } else {
-//                        "1234567890" // Default number for testing
-//                    }
-//                    android.util.Log.d("DetailActivity", "Sending SMS to: $phoneNumber")
-//                    val uri = "smsto:$phoneNumber".toUri()
-//                    val intent = Intent(Intent.ACTION_SENDTO, uri)
-//                    intent.putExtra("sms_body", "Hello, I would like to schedule an appointment")
-//                    startActivity(intent)
-//                } catch (e: Exception) {
-//                    android.util.Log.e("DetailActivity", "Error opening SMS: ${e.message}")
-//                }
-//            }
 
             callBtn.setOnClickListener {
                 val chamber = item.chambers.firstOrNull()
@@ -196,30 +152,6 @@ class DetailActivity : BaseActivity() {
                 append(visitingHour)
             }
 
-            // Remove dynamic chambers population - now using static fields above
-            // chambersContainer.removeAllViews()
-            // val context = chambersContainer.context
-            // for (chamber in item.chambers) {
-            //     val chamberLayout = android.widget.LinearLayout(context).apply {
-            //         orientation = android.widget.LinearLayout.VERTICAL
-            //         setPadding(0, 0, 0, 24)
-            //     }
-            //     val nameView = android.widget.TextView(context).apply {
-            //         text = "Hospital: ${chamber.name}"
-            //         setTextColor(resources.getColor(R.color.black))
-            //         textSize = 16f
-            //         setTypeface(null, android.graphics.Typeface.BOLD)
-            //     }
-            //     val visitingHourView = android.widget.TextView(context).apply {
-            //         text = "Visiting hour: ${chamber.visiting_hour}"
-            //         setTextColor(resources.getColor(R.color.black))
-            //         textSize = 15f
-            //     }
-            //     chamberLayout.addView(nameView)
-            //     chamberLayout.addView(visitingHourView)
-            //     chambersContainer.addView(chamberLayout)
-            // }
-
             // Enhanced image loading logic matching the adapter
             var imageUrl = item.image
 
@@ -240,6 +172,14 @@ class DetailActivity : BaseActivity() {
                 .error(R.drawable.blank_profile) // Show fallback image if loading fails
                 .centerCrop()
                 .into(img)
+
+            // Make Appointment button logic - now simply opens the appointment form
+            makeBtn.setOnClickListener {
+                // Start appointment form activity with doctor data
+                val intent = Intent(this@DetailActivity, AppointmentFormActivity::class.java)
+                intent.putExtra("Object", item) // Pass the entire doctor object
+                startActivity(intent)
+            }
 
             // Debug: Log the processed image URL
             android.util.Log.d("DetailActivity", "Original image URL: ${item.image}")

@@ -8,31 +8,44 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.aas.medi_bridge.Activity.DetailActivity
 import com.aas.medi_bridge.Domain.DoctorsModel
-import com.aas.medi_bridge.databinding.ViewholderTopDoctor2Binding
+import com.aas.medi_bridge.databinding.ViewholderTopDoctor3Binding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
-import com.bumptech.glide.request.RequestOptions
 
-class TopDoctorAdapter2(val items: MutableList<DoctorsModel>): RecyclerView.Adapter<TopDoctorAdapter2.ViewHolder>() {
+class TopDoctorAdapter3(val items: MutableList<DoctorsModel>): RecyclerView.Adapter<TopDoctorAdapter3.ViewHolder>() {
     private var context: Context?=null
 
-    class ViewHolder(val binding: ViewholderTopDoctor2Binding):
+    class ViewHolder(val binding: ViewholderTopDoctor3Binding):
         RecyclerView.ViewHolder(binding.root)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         context=parent.context
         val binding=
-            ViewholderTopDoctor2Binding.inflate(LayoutInflater.from(parent.context),parent,false)
+            ViewholderTopDoctor3Binding.inflate(LayoutInflater.from(parent.context),parent,false)
         return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.binding.nameTxt.text = items[position].name
         holder.binding.specialTxt.text = items[position].specialization
-        holder.binding.scoreTxt.text = items[position].rating.toString()
-        holder.binding.ratingBar.rating = items[position].rating.toFloat()
-        holder.binding.degreeTxt.text = "Professional Doctor"
+
+        // Set hospital name from first chamber or fallback
+        val hospitalName = if (items[position].chambers.isNotEmpty()) {
+            items[position].chambers[0].name
+        } else {
+            "Not Available"
+        }
+        holder.binding.hospitalNameTxt.text = hospitalName
+
+        // Debug logging to check if chambers data is being loaded correctly
+        android.util.Log.d("TopDoctorAdapter3", "Doctor: ${items[position].name}")
+        android.util.Log.d("TopDoctorAdapter3", "Chambers count: ${items[position].chambers.size}")
+        if (items[position].chambers.isNotEmpty()) {
+            android.util.Log.d("TopDoctorAdapter3", "Hospital name: ${items[position].chambers[0].name}")
+        } else {
+            android.util.Log.d("TopDoctorAdapter3", "No chambers found for doctor: ${items[position].name}")
+        }
 
         // Get doctor image or fallback to first chamber image
         var imageUrl = items[position].image
@@ -48,7 +61,7 @@ class TopDoctorAdapter2(val items: MutableList<DoctorsModel>): RecyclerView.Adap
 
         Glide.with(holder.itemView.context)
             .load(imageUrl)
-            .transform(CenterCrop(), RoundedCorners(16)) // CenterCrop and rounded corners
+            .transform(CenterCrop(), RoundedCorners(16))
             .placeholder(R.drawable.ic_menu_gallery)
             .error(R.drawable.ic_menu_gallery)
             .into(holder.binding.img)

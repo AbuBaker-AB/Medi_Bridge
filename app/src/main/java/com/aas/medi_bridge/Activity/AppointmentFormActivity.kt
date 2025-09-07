@@ -284,14 +284,13 @@ class AppointmentFormActivity : AppCompatActivity() {
     }
 
     private fun setupSpinners() {
-        // Setup Gender Spinner with Male, Female, N/A options
-        val genderOptions = arrayOf("Select Gender", "Male", "Female", "N/A")
+        // Setup Gender Spinner with only the selectable options
+        val genderOptions = arrayOf("Please select", "Male", "Female", "N/A")
 
-        // Create custom adapter with proper dropdown styling
+        // Create custom adapter that completely hides placeholder in dropdown
         val genderAdapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, genderOptions) {
 
             override fun isEnabled(position: Int): Boolean {
-                // Disable the first item (placeholder)
                 return position != 0
             }
 
@@ -299,12 +298,10 @@ class AppointmentFormActivity : AppCompatActivity() {
                 val view = super.getView(position, convertView, parent)
                 val textView = view as TextView
 
-                // Style the main display text
                 textView.setPadding(16, 16, 16, 16)
                 textView.textSize = 16f
 
                 if (position == 0) {
-                    // Set placeholder text color to gray
                     textView.setTextColor(Color.parseColor("#9CA3AF"))
                 } else {
                     textView.setTextColor(Color.parseColor("#1f2937"))
@@ -314,25 +311,33 @@ class AppointmentFormActivity : AppCompatActivity() {
             }
 
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = super.getDropDownView(position, convertView, parent)
-                val textView = view as TextView
-
+                // For the placeholder, return a view with 0 height to completely hide it
                 if (position == 0) {
-                    // Completely hide placeholder in dropdown by setting height to 0
-                    textView.height = 0
-                    textView.visibility = View.GONE
-                    textView.setPadding(0, 0, 0, 0)
-                    return view
-                } else {
-                    // Style dropdown items with reduced padding
-                    textView.setPadding(16, 12, 16, 12)  // Reduced vertical padding from 20 to 12
-                    textView.textSize = 16f
-                    textView.visibility = View.VISIBLE
-                    textView.setTextColor(Color.parseColor("#1f2937"))
-                    textView.setBackgroundColor(Color.parseColor("#ffffff"))
+                    val hiddenView = TextView(this@AppointmentFormActivity)
+                    hiddenView.height = 0
+                    hiddenView.visibility = View.GONE
+                    hiddenView.layoutParams = ViewGroup.LayoutParams(0, 0)
+                    return hiddenView
                 }
 
-                return view
+                // For actual options, create a properly styled view
+                val textView = TextView(this@AppointmentFormActivity)
+                textView.text = getItem(position)
+                textView.setPadding(24, 16, 24, 16)
+                textView.textSize = 16f
+                textView.setTextColor(Color.parseColor("#1f2937"))
+                textView.setBackgroundColor(Color.parseColor("#ffffff"))
+
+                // Add subtle border/shadow effect
+                textView.elevation = 2f
+
+                // Add proper layout params
+                textView.layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+
+                return textView
             }
 
             override fun getCount(): Int {
@@ -340,35 +345,27 @@ class AppointmentFormActivity : AppCompatActivity() {
             }
         }
 
-        // Set dropdown resource and apply to spinner
-        genderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerGender.adapter = genderAdapter
 
         // Customize spinner appearance
         binding.spinnerGender.apply {
-            // Set dropdown height and width
-            dropDownVerticalOffset = 4
+            dropDownVerticalOffset = 0
             dropDownWidth = ViewGroup.LayoutParams.MATCH_PARENT
-
-            // Add background and styling
             setBackgroundResource(R.drawable.rounded_edittext_background)
             setPadding(16, 0, 16, 0)
         }
 
-        // Add selection listener with validation
+        // Add selection listener
         binding.spinnerGender.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                if (position > 0) { // Ignore placeholder selection
+                if (position > 0) {
                     val selectedGender = genderOptions[position]
                     android.util.Log.d("AppointmentForm", "Gender selected: $selectedGender")
-
-                    // Update the text color after selection
                     (view as? TextView)?.setTextColor(Color.parseColor("#1f2937"))
                 }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Reset to placeholder state
                 android.util.Log.d("AppointmentForm", "No gender selected")
             }
         }

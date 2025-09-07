@@ -28,35 +28,51 @@ class TopDoctorAdapter2(val items: MutableList<DoctorsModel>): RecyclerView.Adap
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.binding.nameTxt.text = items[position].name
-        holder.binding.specialTxt.text = items[position].specialization
-        holder.binding.scoreTxt.text = items[position].rating.toString()
-        holder.binding.ratingBar.rating = items[position].rating.toFloat()
-        holder.binding.degreeTxt.text = "Professional Doctor"
+        try {
+            val doctor = items[position]
 
-        // Get doctor image or fallback to first chamber image
-        var imageUrl = items[position].image
-        if (imageUrl.isBlank() && items[position].chambers.isNotEmpty()) {
-            imageUrl = items[position].chambers[0].image
-        }
+            // Safely bind text fields with null checks
+            holder.binding.nameTxt.text = doctor.name.takeIf { it.isNotBlank() } ?: "Unknown Doctor"
+            holder.binding.specialTxt.text = doctor.specialization.takeIf { it.isNotBlank() } ?: "General Practice"
+            holder.binding.scoreTxt.text = if (doctor.rating > 0.0) doctor.rating.toString() else "N/A"
+            holder.binding.ratingBar.rating = doctor.rating.toFloat()
+            holder.binding.degreeTxt.text = doctor.degrees.takeIf { it.isNotBlank() } ?: "Professional Doctor"
 
-        // Convert Imgur URL to direct image URL if needed
-        if (imageUrl.isNotBlank() && imageUrl.contains("imgur.com") && !imageUrl.contains("i.imgur.com")) {
-            val imageId = imageUrl.substringAfterLast("/")
-            imageUrl = "https://i.imgur.com/$imageId.jpg"
-        }
+            // Safely get doctor image with proper fallback chain
+            var imageUrl = ""
+            when {
+                doctor.image.isNotBlank() -> imageUrl = doctor.image
+                doctor.chambers.isNotEmpty() && doctor.chambers[0].image.isNotBlank() -> imageUrl = doctor.chambers[0].image
+                else -> imageUrl = "" // Will use placeholder
+            }
 
-        Glide.with(holder.itemView.context)
-            .load(imageUrl)
-            .transform(CenterCrop(), RoundedCorners(16)) // CenterCrop and rounded corners
-            .placeholder(R.drawable.ic_menu_gallery)
-            .error(R.drawable.ic_menu_gallery)
-            .into(holder.binding.img)
+            // Convert Imgur URL to direct image URL if needed
+            if (imageUrl.isNotBlank() && imageUrl.contains("imgur.com") && !imageUrl.contains("i.imgur.com")) {
+                val imageId = imageUrl.substringAfterLast("/")
+                imageUrl = "https://i.imgur.com/$imageId.jpg"
+            }
 
-        holder.binding.makeBtn.setOnClickListener {
-            val intent = Intent(context, DetailActivity::class.java)
-            intent.putExtra("Object", items[position])
-            context?.startActivity(intent)
+            // Load image with better error handling
+            Glide.with(holder.itemView.context)
+                .load(imageUrl.takeIf { it.isNotBlank() })
+                .transform(CenterCrop(), RoundedCorners(16))
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .error(android.R.drawable.ic_menu_gallery)
+                .into(holder.binding.img)
+
+            holder.binding.makeBtn.setOnClickListener {
+                val intent = Intent(context, DetailActivity::class.java)
+                intent.putExtra("Object", doctor)
+                context?.startActivity(intent)
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("TopDoctorAdapter2", "Error binding doctor at position $position: ${e.message}")
+            // Set fallback values to prevent blank items
+            holder.binding.nameTxt.text = "Error Loading Doctor"
+            holder.binding.specialTxt.text = "Please try again"
+            holder.binding.scoreTxt.text = "N/A"
+            holder.binding.ratingBar.rating = 0f
+            holder.binding.degreeTxt.text = "Please refresh"
         }
     }
 

@@ -6,4 +6,33 @@
     <string name="get_started">Get Started</string>
     <string name="make_appointment">Make Appointment</string>
     <string name="back_button">Back</string>
+
+    <!-- Doctor Activity Strings -->
+    <string name="doctor_portal">Doctor Portal</string>
+    <string name="doctor_login">Doctor Login</string>
+    <string name="access_doctor_dashboard">Access your doctor dashboard</string>
+    <string name="doctor_name">Doctor Name</string>
+    <string name="doctor_id">Doctor ID</string>
+    <string name="full_name_required">Full Name *</string>
+    <string name="email_address_required">Email Address *</string>
+    <string name="degrees_required">Degrees *</string>
+    <string name="specialty_required">Specialty *</string>
+    <string name="designation_department_required">Designation &amp; Department *</string>
+    <string name="chamber_name_required">Chamber Name *</string>
+    <string name="chamber_address_required">Chamber Address *</string>
+    <string name="visiting_hour_off_days_required">Visiting Hour and Off Days *</string>
+    <string name="appointment_number">Appointment Number</string>
+    <string name="login">Login</string>
+    <string name="signup">Sign Up</string>
+    <string name="no_account_signup">Don\'t have an account? Sign up</string>
+    <string name="have_account_login">Already have an account? Login</string>
+    <string name="medibridge_logo">MediBridge Logo</string>
+
+    <!-- Additional DoctorActivity strings -->
+    <string name="login_to_account">Login to Your Account</string>
+    <string name="enter_credentials">Enter your credentials to access doctor portal</string>
+    <string name="create_new_account">Create New Account</string>
+    <string name="fill_info_register">Fill in your information to register as a doctor</string>
+    <string name="already_have_account_login">Already have an account? Login</string>
+    <string name="dont_have_account_signup">Don\'t have an account? Sign Up</string>
 </resources>

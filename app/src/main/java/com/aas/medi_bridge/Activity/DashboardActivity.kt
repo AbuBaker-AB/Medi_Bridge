@@ -7,15 +7,14 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.aas.medi_bridge.Adapter.AppointmentAdapter
 import com.aas.medi_bridge.R
 import com.aas.medi_bridge.Domain.AppointmentModel
-import com.aas.medi_bridge.Adapter.AppointmentAdapter
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -34,7 +33,6 @@ class DashboardActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_dashboard)
 
         initViews()
@@ -77,10 +75,7 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
-    override fun onBackPressed() {
-        // When back is pressed, logout and go to login screen
-        logout()
-    }
+
 
     private fun logout() {
         try {

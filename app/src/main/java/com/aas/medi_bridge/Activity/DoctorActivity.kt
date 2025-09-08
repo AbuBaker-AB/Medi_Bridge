@@ -14,7 +14,6 @@ import androidx.cardview.widget.CardView
 import androidx.core.content.edit
 import com.aas.medi_bridge.R
 import com.google.android.material.textfield.TextInputEditText
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 
 class DoctorActivity : AppCompatActivity() {
@@ -32,7 +31,7 @@ class DoctorActivity : AppCompatActivity() {
     // Signup fields
     private lateinit var signupFieldsContainer: LinearLayout
     private lateinit var signupNameEditText: TextInputEditText
-    private lateinit var signupEmailEditText: TextInputEditText
+    private lateinit var signupEmailEditText: TextInputEditText // Re-add email field
     private lateinit var signupDegreesEditText: TextInputEditText
     private lateinit var signupSpecialtyEditText: TextInputEditText
     private lateinit var signupDesignationEditText: TextInputEditText
@@ -74,7 +73,7 @@ class DoctorActivity : AppCompatActivity() {
         // Signup fields
         signupFieldsContainer = findViewById(R.id.signupFieldsContainer)
         signupNameEditText = findViewById(R.id.signupNameEditText)
-        signupEmailEditText = findViewById(R.id.signupEmailEditText)
+        signupEmailEditText = findViewById(R.id.signupEmailEditText) // Re-add email field
         signupDegreesEditText = findViewById(R.id.signupDegreesEditText)
         signupSpecialtyEditText = findViewById(R.id.signupSpecialtyEditText)
         signupDesignationEditText = findViewById(R.id.signupDesignationEditText)
@@ -169,10 +168,11 @@ class DoctorActivity : AppCompatActivity() {
 
     private fun handleLoginFromNewRegistrations(snapshot: DataSnapshot, name: String, id: String) {
         val doctorName = snapshot.child("name").getValue(String::class.java)
+        val doctorEmail = snapshot.child("email").getValue(String::class.java)
         val approved = snapshot.child("approved").getValue(Boolean::class.java) ?: false
         val status = snapshot.child("status").getValue(String::class.java) ?: "pending"
 
-        android.util.Log.d("DoctorLogin", "New registration found: $doctorName, approved: $approved, status: $status")
+        android.util.Log.d("DoctorLogin", "New registration found: $doctorName, email: $doctorEmail, approved: $approved, status: $status")
 
         if (doctorName != null && doctorName.equals(name, ignoreCase = true)) {
             when {
@@ -183,7 +183,7 @@ class DoctorActivity : AppCompatActivity() {
                     Toast.makeText(this, "Your account is pending admin approval. Please wait for approval notification.", Toast.LENGTH_LONG).show()
                 }
                 status == "approved" -> {
-                    saveLoginInfo(doctorName, id) // Now doctorName is guaranteed to be non-null
+                    saveLoginInfo(doctorName, id, doctorEmail ?: "")
                     navigateToDashboard()
                     Toast.makeText(this, "Welcome back, $doctorName!", Toast.LENGTH_SHORT).show()
                 }
@@ -202,24 +202,21 @@ class DoctorActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 var doctorFound = false
 
-                for (childSnapshot in snapshot.children) {
-                    val doctorName = childSnapshot.child("name").getValue(String::class.java)
-                    val doctorId = childSnapshot.child("id").getValue(String::class.java)
+                for (doctorSnapshot in snapshot.children) {
+                    val doctorName = doctorSnapshot.child("name").getValue(String::class.java)
+                    val doctorEmail = doctorSnapshot.child("email").getValue(String::class.java)
 
-                    android.util.Log.d("DoctorLogin", "Checking original doctor: $doctorName, ID: $doctorId")
-
-                    if (doctorId != null && doctorName != null && doctorId == id && doctorName.equals(name, ignoreCase = true)) {
-                        // Original doctors from JSON are pre-approved
-                        saveLoginInfo(doctorName, id)
+                    if (doctorName != null && doctorName.equals(name, ignoreCase = true)) {
+                        doctorFound = true
+                        saveLoginInfo(doctorName, id, doctorEmail ?: "")
                         navigateToDashboard()
                         Toast.makeText(this@DoctorActivity, "Welcome back, $doctorName!", Toast.LENGTH_SHORT).show()
-                        doctorFound = true
                         break
                     }
                 }
 
                 if (!doctorFound) {
-                    Toast.makeText(this@DoctorActivity, "Doctor ID not found. Please sign up first.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@DoctorActivity, "Invalid credentials. Please check your name and ID.", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -232,7 +229,7 @@ class DoctorActivity : AppCompatActivity() {
     private fun performSignup() {
         // Get the doctor name from the signup field
         val name = signupNameEditText.text.toString().trim()
-        val email = signupEmailEditText.text.toString().trim()
+        val email = signupEmailEditText.text.toString().trim() // Get email
         val degrees = signupDegreesEditText.text.toString().trim()
         val specialty = signupSpecialtyEditText.text.toString().trim()
         val designation = signupDesignationEditText.text.toString().trim()
@@ -241,7 +238,7 @@ class DoctorActivity : AppCompatActivity() {
         val visitingHour = signupVisitingHourEditText.text.toString().trim()
         val appointmentNumber = signupAppointmentNumberEditText.text.toString().trim()
 
-        // Validate all required fields
+        // Validate all required fields (including email)
         if (name.isEmpty() || email.isEmpty() || degrees.isEmpty() || specialty.isEmpty() ||
             designation.isEmpty() || chamberName.isEmpty() ||
             chamberAddress.isEmpty() || visitingHour.isEmpty() || appointmentNumber.isEmpty()) {
@@ -252,83 +249,54 @@ class DoctorActivity : AppCompatActivity() {
         // Generate unique doctor ID
         val doctorId = generateDoctorId()
 
-        // Create a temporary password for Firebase Auth (doctor will use custom login)
-        val tempPassword = "temp${doctorId}123"
-
-        // Use Firebase Auth to create the user account
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, tempPassword)
-            .addOnSuccessListener { authResult ->
-                // Auth account created successfully, now save doctor data
-                val doctorData = hashMapOf(
-                    "name" to name,
-                    "id" to doctorId,
-                    "email" to email,
-                    "degrees" to degrees,
-                    "specialization" to specialty,
-                    "specialty" to specialty, // Keep both for compatibility
-                    "designation" to designation,
-                    "city" to extractCityFromWorkplace(chamberAddress),
-                    "chambers" to listOf(
-                        hashMapOf(
-                            "name" to chamberName,
-                            "address" to chamberAddress,
-                            "visiting_hour" to visitingHour,
-                            "appointment_number" to appointmentNumber,
-                            "location" to "", // Can be added later
-                            "image" to "" // Can be added later
-                        )
-                    ),
-                    "status" to "pending", // Pending approval
-                    "registrationDate" to System.currentTimeMillis(),
-                    "approved" to false,
-                    "uid" to authResult.user?.uid // Store Firebase Auth UID
+        // Create doctor data with email (no Firebase Auth)
+        val doctorData = hashMapOf(
+            "name" to name,
+            "id" to doctorId,
+            "email" to email, // Include email
+            "degrees" to degrees,
+            "specialization" to specialty,
+            "specialty" to specialty, // Keep both for compatibility
+            "designation" to designation,
+            "city" to extractCityFromWorkplace(chamberAddress),
+            "chambers" to listOf(
+                hashMapOf(
+                    "name" to chamberName,
+                    "address" to chamberAddress,
+                    "visiting_hour" to visitingHour,
+                    "appointment_number" to appointmentNumber,
+                    "location" to "", // Can be added later
+                    "image" to "" // Can be added later
                 )
+            ),
+            "status" to "pending", // Pending approval
+            "registrationDate" to System.currentTimeMillis(),
+            "approved" to false
+        )
 
-                // Save to Firebase Database
-                database.child("doctors").child(doctorId).setValue(doctorData)
-                    .addOnSuccessListener {
-                        // Send Doctor ID via email
-                        sendDoctorIdViaEmail(doctorId, email)
+        // Save directly to Firebase Database (no Firebase Auth needed)
+        database.child("doctors").child(doctorId).setValue(doctorData)
+            .addOnSuccessListener {
+                // Start listening for approval notifications
+                com.aas.medi_bridge.Service.DoctorNotificationService.startListeningForApproval(this@DoctorActivity, doctorId)
 
-                        // Start listening for approval notifications
-                        com.aas.medi_bridge.Service.DoctorNotificationService.startListeningForApproval(this@DoctorActivity, doctorId)
+                // Show the generated Doctor ID to the user
+                Toast.makeText(this@DoctorActivity,
+                    "Registration successful! Your Doctor ID is: $doctorId\n" +
+                            "Please save this ID for login. You will be notified once approved.",
+                    Toast.LENGTH_LONG).show()
 
-                        // Show the generated Doctor ID to the user
-                        Toast.makeText(this@DoctorActivity,
-                            "Registration successful! Your Doctor ID is: $doctorId\n" +
-                                    "Please save this ID for login. You will be notified once approved.",
-                            Toast.LENGTH_LONG).show()
+                // Also show an alert dialog with the ID so user can copy it
+                showDoctorIdDialog(doctorId, name)
 
-                        // Also show an alert dialog with the ID so user can copy it
-                        showDoctorIdDialog(doctorId, name)
-
-                        // Sign out from Firebase Auth (doctor will use custom login)
-                        FirebaseAuth.getInstance().signOut()
-
-                        // Clear form and switch to login mode
-                        clearAllFormFields()
-                        toggleMode() // Switch back to login
-                    }
-                    .addOnFailureListener { error ->
-                        Toast.makeText(this@DoctorActivity,
-                            "Failed to save doctor data: ${error.message}",
-                            Toast.LENGTH_SHORT).show()
-                        // Delete the auth account if database save fails
-                        authResult.user?.delete()
-                    }
+                // Clear form and switch to login mode
+                clearAllFormFields()
+                toggleMode() // Switch back to login
             }
             .addOnFailureListener { error ->
-                when {
-                    error.message?.contains("email address is already in use") == true -> {
-                        Toast.makeText(this@DoctorActivity, "Email already registered", Toast.LENGTH_SHORT).show()
-                    }
-                    error.message?.contains("network error") == true -> {
-                        Toast.makeText(this@DoctorActivity, "Network error. Please check your internet connection.", Toast.LENGTH_SHORT).show()
-                    }
-                    else -> {
-                        Toast.makeText(this@DoctorActivity, "Registration failed: ${error.message}", Toast.LENGTH_SHORT).show()
-                    }
-                }
+                Toast.makeText(this@DoctorActivity,
+                    "Failed to save doctor data: ${error.message}",
+                    Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -357,11 +325,13 @@ class DoctorActivity : AppCompatActivity() {
         android.util.Log.d("DoctorSignup", "Doctor ID $doctorId should be sent to $email")
     }
 
-    private fun saveLoginInfo(name: String, id: String) {
+    private fun saveLoginInfo(name: String, id: String, email: String = "") {
         sharedPreferences.edit {
             putString("doctor_name", name)
             putString("doctor_id", id)
+            putString("doctor_email", email)
         }
+        android.util.Log.d("DoctorLogin", "Saved login info - Name: $name, ID: $id, Email: $email")
     }
 
     private fun navigateToDashboard() {
@@ -386,7 +356,7 @@ class DoctorActivity : AppCompatActivity() {
 
     private fun clearAllFormFields() {
         signupNameEditText.text?.clear()
-        signupEmailEditText.text?.clear()
+        signupEmailEditText.text?.clear() // Clear email
         signupDegreesEditText.text?.clear()
         signupSpecialtyEditText.text?.clear()
         signupDesignationEditText.text?.clear()

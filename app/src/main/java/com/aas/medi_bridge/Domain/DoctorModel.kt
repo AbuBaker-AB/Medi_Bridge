@@ -55,8 +55,11 @@ data class AppointmentModel(
     val appointmentDate: String = "",
     val appointmentTime: String = "",
     val doctorId: String = "",
-    val status: String = "scheduled", // scheduled, completed, cancelled
-    val symptoms: String = ""
+    val doctorEmail: String = "", // Added for dashboard filtering
+    val doctorName: String = "", // Added for display purposes
+    val status: String = "pending", // Changed from "scheduled" to match Firebase data
+    val symptoms: String = "",
+    val timestamp: Long = 0L // Added for sorting by creation time
 ) : Parcelable {
 
     constructor(parcel: Parcel) : this(
@@ -67,7 +70,10 @@ data class AppointmentModel(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
-        parcel.readString() ?: ""
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readLong()
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -77,8 +83,11 @@ data class AppointmentModel(
         parcel.writeString(appointmentDate)
         parcel.writeString(appointmentTime)
         parcel.writeString(doctorId)
+        parcel.writeString(doctorEmail)
+        parcel.writeString(doctorName)
         parcel.writeString(status)
         parcel.writeString(symptoms)
+        parcel.writeLong(timestamp)
     }
 
     override fun describeContents(): Int {

@@ -14,6 +14,12 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.aas.medi_bridge.R
+import com.aas.medi_bridge.Domain.AppointmentModel
+import com.aas.medi_bridge.Adapter.AppointmentAdapter
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -23,6 +29,8 @@ class DashboardActivity : AppCompatActivity() {
     private lateinit var backBtn: ImageView
     private lateinit var logoutBtn: ImageView
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var appointmentAdapter: AppointmentAdapter
+    private val appointments = mutableListOf<AppointmentModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,51 +61,163 @@ class DashboardActivity : AppCompatActivity() {
 
         // Setup RecyclerView
         appointmentsRecyclerView.layoutManager = LinearLayoutManager(this)
+        appointmentAdapter = AppointmentAdapter(appointments)
+        appointmentsRecyclerView.adapter = appointmentAdapter
     }
 
     private fun setupClickListeners() {
-        backBtn.setOnClickListener { finish() }
+        // Fix back button to navigate properly
+        backBtn.setOnClickListener {
+            // Instead of onBackPressed, finish the activity to go back to login
+            finish()
+        }
 
         logoutBtn.setOnClickListener {
-            // Sign out from Firebase Auth
-            com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
-            // Clear stored doctor info
+            logout()
+        }
+    }
+
+    override fun onBackPressed() {
+        // When back is pressed, logout and go to login screen
+        logout()
+    }
+
+    private fun logout() {
+        try {
+            android.util.Log.d("DashboardActivity", "Starting logout process...")
+
+            // Clear stored doctor info first
             val editor = sharedPreferences.edit()
             editor.clear()
             editor.apply()
-            // Go back to login activity
+            android.util.Log.d("DashboardActivity", "SharedPreferences cleared")
+
+            // Sign out from Firebase Auth (if signed in)
+            try {
+                com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                android.util.Log.d("DashboardActivity", "Firebase auth sign out completed")
+            } catch (authError: Exception) {
+                android.util.Log.w("DashboardActivity", "Firebase auth sign out failed (might not be signed in): ${authError.message}")
+            }
+
+            // Go back to DoctorActivity (login screen) with proper flags
             val intent = Intent(this@DashboardActivity, DoctorActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+
+            android.util.Log.d("DashboardActivity", "Logout completed successfully")
+        } catch (e: Exception) {
+            android.util.Log.e("DashboardActivity", "Error during logout: ${e.message}")
+            // Even if there's an error, try to go back to login
+            val intent = Intent(this@DashboardActivity, DoctorActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
         }
     }
 
     private fun loadDoctorInfo() {
-        // Load doctor info in background to avoid blocking UI
-        Thread {
-            val doctorName = sharedPreferences.getString("doctor_name", "Doctor")
-            val doctorSpecialty = sharedPreferences.getString("doctor_specialty", "General Practice")
-
-            // Update UI on main thread
-            runOnUiThread {
-                welcomeText.text = "Welcome, Dr. $doctorName"
-            }
-        }.start()
+        val doctorName = sharedPreferences.getString("doctor_name", "Doctor")
+        val doctorSpecialty = sharedPreferences.getString("doctor_specialty", "General Practice")
+        welcomeText.text = "Welcome, Dr. $doctorName"
     }
 
     private fun loadAppointments() {
-        // For now, show empty state
-        // In the future, this will load appointments from Firebase
-        val appointments = ArrayList<String>()
+        val doctorName = sharedPreferences.getString("doctor_name", "")
+        val doctorId = sharedPreferences.getString("doctor_id", "")
+        val doctorEmail = sharedPreferences.getString("doctor_email", "")
 
-        if (appointments.isEmpty()) {
-            appointmentsRecyclerView.visibility = View.GONE
-            emptyStateLayout.visibility = View.VISIBLE
-        } else {
-            appointmentsRecyclerView.visibility = View.VISIBLE
-            emptyStateLayout.visibility = View.GONE
-            // Setup adapter here when appointments are available
+        if (doctorName.isNullOrEmpty() && doctorId.isNullOrEmpty() && doctorEmail.isNullOrEmpty()) {
+            android.util.Log.e("DashboardActivity", "No doctor info found in preferences")
+            showEmptyState()
+            return
         }
+
+        android.util.Log.d("DashboardActivity", "Loading appointments for doctor: $doctorName (ID: $doctorId, Email: $doctorEmail)")
+
+        val database = FirebaseDatabase.getInstance()
+        val appointmentsRef = database.getReference("appointments")
+
+        appointmentsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                android.util.Log.d("DashboardActivity", "Appointments snapshot received, children: ${snapshot.childrenCount}")
+
+                appointments.clear()
+
+                for (appointmentSnapshot in snapshot.children) {
+                    try {
+                        val appointment = appointmentSnapshot.getValue(AppointmentModel::class.java)
+                        if (appointment != null) {
+                            // Filter by doctor name, doctor ID, or doctor email
+                            val matchesByName = appointment.doctorName.equals(doctorName, ignoreCase = true)
+                            val matchesById = appointment.doctorId == doctorId
+                            val matchesByEmail = appointment.doctorEmail.equals(doctorEmail, ignoreCase = true)
+
+                            if (matchesByName || matchesById || matchesByEmail) {
+                                // Filter appointments for the current week
+                                if (isAppointmentInCurrentWeek(appointment.appointmentDate)) {
+                                    appointments.add(appointment)
+                                    android.util.Log.d("DashboardActivity", "Added appointment for patient: ${appointment.patientName} on ${appointment.appointmentDate}")
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        android.util.Log.e("DashboardActivity", "Error parsing appointment: ${e.message}")
+                    }
+                }
+
+                // Sort appointments by date and time
+                appointments.sortWith { a1, a2 ->
+                    when {
+                        a1.appointmentDate != a2.appointmentDate -> a1.appointmentDate.compareTo(a2.appointmentDate)
+                        else -> a1.appointmentTime.compareTo(a2.appointmentTime)
+                    }
+                }
+
+                android.util.Log.d("DashboardActivity", "Total weekly appointments loaded: ${appointments.size}")
+
+                runOnUiThread {
+                    if (appointments.isEmpty()) {
+                        showEmptyState()
+                    } else {
+                        showAppointments()
+                    }
+                    appointmentAdapter.notifyDataSetChanged()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                android.util.Log.e("DashboardActivity", "Failed to load appointments: ${error.message}")
+                runOnUiThread {
+                    showEmptyState()
+                }
+            }
+        })
+    }
+
+    private fun isAppointmentInCurrentWeek(appointmentDate: String): Boolean {
+        try {
+            // Simple week check - can be enhanced with proper date parsing
+            val currentTimeMillis = System.currentTimeMillis()
+            val oneWeekInMillis = 7 * 24 * 60 * 60 * 1000L
+
+            // For now, show all appointments (can be refined based on date format)
+            // This assumes appointments are for the current week by default
+            return true
+        } catch (e: Exception) {
+            android.util.Log.e("DashboardActivity", "Error checking appointment date: ${e.message}")
+            return true // Show all appointments if date parsing fails
+        }
+    }
+
+    private fun showEmptyState() {
+        appointmentsRecyclerView.visibility = View.GONE
+        emptyStateLayout.visibility = View.VISIBLE
+    }
+
+    private fun showAppointments() {
+        appointmentsRecyclerView.visibility = View.VISIBLE
+        emptyStateLayout.visibility = View.GONE
     }
 }

@@ -29,12 +29,11 @@ class TopDoctorsActivity : BaseActivity() {
                     binding.viewTopDoctor.adapter = TopDoctorAdapter2(doctors.toMutableList())
                 } else {
                     // Handle empty or null doctor list
-                    android.util.Log.w("TopDoctorsActivity", "No doctors data available")
                     binding.viewTopDoctor.adapter = TopDoctorAdapter2(mutableListOf())
                 }
                 binding.progressBarTopDoctor.visibility = View.GONE
             } catch (e: Exception) {
-                android.util.Log.e("TopDoctorsActivity", "Error loading doctors: ${e.message}")
+                // Handle error silently
                 binding.progressBarTopDoctor.visibility = View.GONE
             }
         }

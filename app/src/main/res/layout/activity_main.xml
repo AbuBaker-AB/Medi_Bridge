@@ -227,7 +227,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
-            <!-- Home/Explorer Button -->
+            <!-- Home Button -->
             <LinearLayout
                 android:id="@+id/homeLayout"
                 android:layout_width="0dp"
@@ -244,48 +244,18 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/btn_1"
-                    app:tint="@color/purple" />
+                    android:src="@drawable/home_hospital_black" />
 
                 <TextView
+                    android:id="@+id/textViewHome"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="Home"
                     android:textAlignment="center"
-                    android:textColor="@color/purple"
+                    android:textColor="@color/black"
                     android:textSize="10sp"
                     android:textStyle="bold" />
-
-            </LinearLayout>
-
-            <!-- Wishlist Button -->
-            <LinearLayout
-                android:id="@+id/wishlistLayout"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/btn_2"
-                    app:tint="@color/darkgrey" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Wishlist"
-                    android:textAlignment="center"
-                    android:textColor="@color/darkgrey"
-                    android:textSize="10sp" />
 
             </LinearLayout>
 
@@ -302,13 +272,14 @@
                 android:focusable="true">
 
                 <ImageView
+                    android:id="@+id/imageViewSearch"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/search_icon"
-                    app:tint="@color/darkgrey" />
+                    android:src="@drawable/search_black" />
 
                 <TextView
+                    android:id="@+id/textViewSearch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
@@ -319,8 +290,7 @@
 
             </LinearLayout>
 
-
-            <!-- Notifications Button -->
+            <!-- Notification Button -->
             <LinearLayout
                 android:id="@+id/notificationLayout"
                 android:layout_width="0dp"
@@ -332,18 +302,73 @@
                 android:clickable="true"
                 android:focusable="true">
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/notification"
-                    app:tint="@color/darkgrey" />
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <ImageView
+                        android:id="@+id/imageViewNotification"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/notification_black" />
+
+                    <!-- Notification Badge -->
+                    <TextView
+                        android:id="@+id/notificationBadge"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_alignTop="@+id/imageViewNotification"
+                        android:layout_alignEnd="@+id/imageViewNotification"
+                        android:layout_marginTop="-4dp"
+                        android:layout_marginEnd="-4dp"
+                        android:background="@drawable/circle_red"
+                        android:gravity="center"
+                        android:text="1"
+                        android:textColor="@color/white"
+                        android:textSize="8sp"
+                        android:textStyle="bold"
+                        android:visibility="gone" />
+
+                </RelativeLayout>
 
                 <TextView
+                    android:id="@+id/textViewNotification"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Notifications"
+                    android:text="Notification"
+                    android:textAlignment="center"
+                    android:textColor="@color/darkgrey"
+                    android:textSize="10sp" />
+
+            </LinearLayout>
+
+            <!-- Doctor Button -->
+            <LinearLayout
+                android:id="@+id/doctorLayout"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:id="@+id/imageViewDoctor"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/doctor_account_black" />
+
+                <TextView
+                    android:id="@+id/textViewDoctor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Doctor"
                     android:textAlignment="center"
                     android:textColor="@color/darkgrey"
                     android:textSize="10sp" />

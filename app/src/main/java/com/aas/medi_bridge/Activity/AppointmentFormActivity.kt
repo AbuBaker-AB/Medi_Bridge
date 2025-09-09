@@ -77,24 +77,21 @@ class AppointmentFormActivity : AppCompatActivity() {
     }
 
     private fun setupAvailableDatesAndTimes() {
-        // Debug: Log the visiting hours from database
+        // Get visiting hours from database
         val visitingHour = when {
             item.visiting_hour.isNotBlank() -> item.visiting_hour
             item.chambers.isNotEmpty() && item.chambers[0].visiting_hour.isNotBlank() -> item.chambers[0].visiting_hour
             else -> "9am to 5pm"
         }
-        android.util.Log.d("AppointmentForm", "Raw visiting hours from database: '$visitingHour'")
 
         val availableDates = generateAvailableDates()
         val dateAdapter = DateChipAdapter(availableDates) { date ->
             selectedDate = date
-            android.util.Log.d("AppointmentForm", "Selected date: $date")
 
             // Update available times for selected date
             val availableTimes = getAvailableTimesForDoctor()
             val timeAdapter = TimeChipAdapter(availableTimes) { time ->
                 selectedTime = time
-                android.util.Log.d("AppointmentForm", "Selected time: $time")
             }
             binding.availableTimesRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
             binding.availableTimesRecyclerView.adapter = timeAdapter
@@ -105,10 +102,8 @@ class AppointmentFormActivity : AppCompatActivity() {
 
         // Show available times immediately (not just when date is selected)
         val availableTimes = getAvailableTimesForDoctor()
-        android.util.Log.d("AppointmentForm", "Generated time slots: $availableTimes")
         val timeAdapter = TimeChipAdapter(availableTimes) { time ->
             selectedTime = time
-            android.util.Log.d("AppointmentForm", "Selected time: $time")
         }
         binding.availableTimesRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.availableTimesRecyclerView.adapter = timeAdapter
@@ -185,20 +180,15 @@ class AppointmentFormActivity : AppCompatActivity() {
     private fun parseVisitingHoursToTimeSlots(visitingHours: String): List<String> {
         val timeSlots = mutableListOf<String>()
 
-        android.util.Log.d("AppointmentForm", "Parsing visiting hours: '$visitingHours'")
-
         try {
             // Clean the visiting hours string - remove parentheses content first
             val cleanHours = visitingHours.replace(Regex("\\([^)]*\\)"), "").trim()
-            android.util.Log.d("AppointmentForm", "Cleaned hours: '$cleanHours'")
 
             // Handle multiple time ranges separated by "&"
             val timeRanges = cleanHours.split("&")
-            android.util.Log.d("AppointmentForm", "Time ranges: $timeRanges")
 
             for (range in timeRanges) {
                 val trimmedRange = range.trim()
-                android.util.Log.d("AppointmentForm", "Processing range: '$trimmedRange'")
 
                 // Extract start and end times using " to " as separator
                 val parts = trimmedRange.split(" to ")
@@ -206,34 +196,25 @@ class AppointmentFormActivity : AppCompatActivity() {
                     val startTimeRaw = parts[0].trim()
                     val endTimeRaw = parts[1].trim()
 
-                    android.util.Log.d("AppointmentForm", "Start time raw: '$startTimeRaw', End time raw: '$endTimeRaw'")
-
                     val startTime = normalizeTimeFormat(startTimeRaw)
                     val endTime = normalizeTimeFormat(endTimeRaw)
 
-                    android.util.Log.d("AppointmentForm", "Normalized - Start: '$startTime', End: '$endTime'")
-
                     val slots = generateTimeSlots(startTime, endTime)
-                    android.util.Log.d("AppointmentForm", "Generated slots for range: $slots")
                     timeSlots.addAll(slots)
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.e("AppointmentForm", "Error parsing visiting hours: ${e.message}")
             // Fallback to default times
             timeSlots.addAll(listOf("9:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:00 PM", "4:00 PM"))
         }
 
         val result = timeSlots.ifEmpty { listOf("9:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:00 PM", "4:00 PM") }
-        android.util.Log.d("AppointmentForm", "Final time slots: $result")
         return result
     }
 
     private fun normalizeTimeFormat(time: String): String {
         // Remove any extra spaces and unwanted characters but keep the basic time format
         val cleaned = time.trim().replace(Regex("\\s+"), " ")
-
-        android.util.Log.d("AppointmentForm", "Normalizing time: '$time' -> '$cleaned'")
 
         // Handle different time formats from database
         return when {
@@ -257,8 +238,6 @@ class AppointmentFormActivity : AppCompatActivity() {
             }
             // If already in correct format, return as is
             else -> cleaned
-        }.also {
-            android.util.Log.d("AppointmentForm", "Normalized result: '$it'")
         }
     }
 
@@ -278,7 +257,7 @@ class AppointmentFormActivity : AppCompatActivity() {
                 calendar.add(Calendar.MINUTE, 15) // 15-minute intervals
             }
         } catch (e: Exception) {
-            android.util.Log.e("AppointmentForm", "Error generating time slots: ${e.message}")
+            // Handle error silently
         }
 
         return timeSlots
@@ -475,19 +454,6 @@ class AppointmentFormActivity : AppCompatActivity() {
         val doctorSpecialization = item.specialization
         val patientName = "$firstName $lastName"
 
-        // Log the collected data
-        android.util.Log.d("AppointmentForm", "=== Appointment Data ===")
-        android.util.Log.d("AppointmentForm", "Doctor: $doctorName")
-        android.util.Log.d("AppointmentForm", "Patient: $patientName")
-        android.util.Log.d("AppointmentForm", "DOB: $dob")
-        android.util.Log.d("AppointmentForm", "Gender: $gender")
-        android.util.Log.d("AppointmentForm", "Contact: $contactNumber")
-        android.util.Log.d("AppointmentForm", "Email: $email")
-        android.util.Log.d("AppointmentForm", "Message: $message")
-        android.util.Log.d("AppointmentForm", "Date: $selectedDate")
-        android.util.Log.d("AppointmentForm", "Time: $selectedTime")
-        android.util.Log.d("AppointmentForm", "========================")
-
         // Save appointment notification locally
         saveAppointmentNotificationLocally(doctorName, patientName, doctorSpecialization)
     }
@@ -498,26 +464,14 @@ class AppointmentFormActivity : AppCompatActivity() {
         doctorSpecialization: String
     ) {
         try {
-            android.util.Log.d("AppointmentForm", "🔄 Starting to save appointment notification...")
-            android.util.Log.d("AppointmentForm", "Doctor: $doctorName")
-            android.util.Log.d("AppointmentForm", "Patient: $patientName")
-            android.util.Log.d("AppointmentForm", "Date: $selectedDate")
-            android.util.Log.d("AppointmentForm", "Time: $selectedTime")
-            android.util.Log.d("AppointmentForm", "Specialization: $doctorSpecialization")
-
             // Use a simple direct approach to save the notification
             val sharedPreferences = getSharedPreferences("appointment_notifications", MODE_PRIVATE)
-
-            // REMOVED: Clear any existing corrupted data first - this was deleting all previous appointments!
-            // sharedPreferences.edit().clear().commit()
-            android.util.Log.d("AppointmentForm", "Preserving existing appointments and adding new one")
 
             // Create a simple appointment string instead of JSON object
             val appointmentData = "$patientName|$doctorName|$selectedDate|$selectedTime|${System.currentTimeMillis()}"
 
             // Get existing appointments and add the new one
             val existingAppointments = sharedPreferences.getStringSet("appointments_simple", mutableSetOf()) ?: mutableSetOf()
-            android.util.Log.d("AppointmentForm", "Found ${existingAppointments.size} existing appointments")
 
             val updatedAppointments = existingAppointments.toMutableSet()
             updatedAppointments.add(appointmentData)
@@ -526,12 +480,9 @@ class AppointmentFormActivity : AppCompatActivity() {
                 .putStringSet("appointments_simple", updatedAppointments)
                 .commit()
 
-            android.util.Log.d("AppointmentForm", "✅ Appointment saved successfully as: $appointmentData")
-            android.util.Log.d("AppointmentForm", "📊 Total appointments now: ${updatedAppointments.size}")
             Toast.makeText(this, "Appointment booked successfully!", Toast.LENGTH_SHORT).show()
 
         } catch (e: Exception) {
-            android.util.Log.e("AppointmentForm", "❌ Failed to save appointment notification: ${e.message}")
             Toast.makeText(this, "Appointment booked, but failed to save notification", Toast.LENGTH_SHORT).show()
         }
     }
@@ -556,7 +507,7 @@ class AppointmentFormActivity : AppCompatActivity() {
         val message = "Dear $patientName,\n\nYour appointment has been confirmed with $doctorName from $specialization department.\n\nDate: $date\nTime: $time\n\nPlease arrive 15 minutes before your appointed time.\n\nThank you!"
 
         val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.medi_bridge_logo)
+            .setSmallIcon(R.drawable.medi_bridge_logo) // Use your app logo
             .setContentTitle("Appointment Confirmed - Dr. $doctorName")
             .setContentText("$specialization Department • $date at $time")
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))
@@ -570,4 +521,3 @@ class AppointmentFormActivity : AppCompatActivity() {
         Toast.makeText(this, "Appointment confirmed! Check notification for details.", Toast.LENGTH_LONG).show()
     }
 }
-

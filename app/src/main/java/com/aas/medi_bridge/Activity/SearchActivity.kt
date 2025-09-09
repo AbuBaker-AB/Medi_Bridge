@@ -57,7 +57,6 @@ class SearchActivity : BaseActivity() {
         viewModel.doctors.observe(this) { doctorsList ->
             allDoctors = doctorsList
             binding.progressBar.visibility = View.GONE
-            android.util.Log.d("SearchActivity", "Loaded ${allDoctors.size} doctors")
         }
         viewModel.loadDoctors()
     }
@@ -79,27 +78,13 @@ class SearchActivity : BaseActivity() {
                 ""
             }
 
-            // Debug logging to see what's being searched
-            android.util.Log.d("SearchActivity", "Searching doctor: ${doctor.name}")
-            android.util.Log.d("SearchActivity", "- Name: '${doctor.name}'")
-            android.util.Log.d("SearchActivity", "- Specialization: '${doctor.specialization}'")
-            android.util.Log.d("SearchActivity", "- Designation: '${doctor.designation}'")
-            android.util.Log.d("SearchActivity", "- Hospital: '$hospitalName'")
-            android.util.Log.d("SearchActivity", "- Address: '${doctor.address}'")
-            android.util.Log.d("SearchActivity", "- Location: '${doctor.location}'")
-
-            val matches = doctor.name.contains(query, ignoreCase = true) ||
-                         doctor.specialization.contains(query, ignoreCase = true) ||
-                         doctor.designation.contains(query, ignoreCase = true) ||
-                         hospitalName.contains(query, ignoreCase = true) ||
-                         doctor.address.contains(query, ignoreCase = true) ||
-                         doctor.location.contains(query, ignoreCase = true)
-
-            android.util.Log.d("SearchActivity", "Match result for '$query': $matches")
-            matches
+            doctor.name.contains(query, ignoreCase = true) ||
+            doctor.specialization.contains(query, ignoreCase = true) ||
+            doctor.designation.contains(query, ignoreCase = true) ||
+            hospitalName.contains(query, ignoreCase = true) ||
+            doctor.address.contains(query, ignoreCase = true) ||
+            doctor.location.contains(query, ignoreCase = true)
         }
-
-        android.util.Log.d("SearchActivity", "Found ${matchingDoctors.size} matches for '$query'")
 
         // Show results or no results message
         if (matchingDoctors.isEmpty()) {

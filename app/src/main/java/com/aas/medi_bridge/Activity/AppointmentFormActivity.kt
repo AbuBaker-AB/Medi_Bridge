@@ -18,18 +18,24 @@ import androidx.core.app.NotificationCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.aas.medi_bridge.Adapter.DateChipAdapter
 import com.aas.medi_bridge.Adapter.TimeChipAdapter
+import com.aas.medi_bridge.Adapter.TimeSlot
 import com.aas.medi_bridge.Domain.DoctorsModel
 import com.aas.medi_bridge.R
 import com.aas.medi_bridge.databinding.ActivityAppointmentFormBinding
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.getValue
 
 class AppointmentFormActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAppointmentFormBinding
     private lateinit var item: DoctorsModel
     private var selectedDate: String = ""
     private var selectedTime: String = ""
+    private var bookedSlots: MutableMap<String, Set<String>> = mutableMapOf() // date -> set of booked times
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,24 +93,73 @@ class AppointmentFormActivity : AppCompatActivity() {
         val availableDates = generateAvailableDates()
         val dateAdapter = DateChipAdapter(availableDates) { date ->
             selectedDate = date
-
-            // Update available times for selected date
-            val availableTimes = getAvailableTimesForDoctor()
-            val timeAdapter = TimeChipAdapter(availableTimes) { time ->
-                selectedTime = time
-            }
-            binding.availableTimesRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-            binding.availableTimesRecyclerView.adapter = timeAdapter
+            // Load booked appointments for this doctor and date, then update time slots
+            loadBookedAppointments(date)
         }
 
         binding.availableDatesRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.availableDatesRecyclerView.adapter = dateAdapter
 
-        // Show available times immediately (not just when date is selected)
-        val availableTimes = getAvailableTimesForDoctor()
-        val timeAdapter = TimeChipAdapter(availableTimes) { time ->
+        // Initialize with first date if available
+        if (availableDates.isNotEmpty()) {
+            selectedDate = availableDates[0]
+            loadBookedAppointments(selectedDate)
+        }
+    }
+
+    private fun loadBookedAppointments(date: String) {
+        val database = FirebaseDatabase.getInstance()
+        val appointmentsRef = database.getReference("appointments")
+
+        // Query appointments for this doctor on the selected date
+        appointmentsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val bookedTimes = mutableSetOf<String>()
+
+                for (appointmentSnapshot in snapshot.children) {
+                    val doctorId = appointmentSnapshot.child("doctorId").getValue(String::class.java)
+                    val doctorName = appointmentSnapshot.child("doctorName").getValue(String::class.java)
+                    val appointmentDate = appointmentSnapshot.child("appointmentDate").getValue(String::class.java)
+                    val appointmentTime = appointmentSnapshot.child("appointmentTime").getValue(String::class.java)
+                    val status = appointmentSnapshot.child("status").getValue(String::class.java)
+
+                    // Use doctor name for comparison with fallback to doctorId
+                    val isDoctorMatch = doctorName == item.name || doctorId == item.name
+
+                    if (isDoctorMatch && appointmentDate == date &&
+                        appointmentTime != null && status != "cancelled") {
+                        bookedTimes.add(appointmentTime)
+                    }
+                }
+
+                // Store booked slots for this date
+                bookedSlots[date] = bookedTimes
+
+                // Update time slots UI
+                updateTimeSlots(date, bookedTimes)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@AppointmentFormActivity,
+                    "Failed to load booking information: ${error.message}", Toast.LENGTH_SHORT).show()
+                // Show default time slots without booking info
+                updateTimeSlots(date, emptySet())
+            }
+        })
+    }
+
+    private fun updateTimeSlots(date: String, bookedTimes: Set<String>) {
+        val allAvailableTimes = getAvailableTimesForDoctor()
+
+        // Create TimeSlot objects with booking status
+        val timeSlots = allAvailableTimes.map { time ->
+            TimeSlot(time = time, isBooked = bookedTimes.contains(time))
+        }
+
+        val timeAdapter = TimeChipAdapter(timeSlots) { time ->
             selectedTime = time
         }
+
         binding.availableTimesRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.availableTimesRecyclerView.adapter = timeAdapter
     }

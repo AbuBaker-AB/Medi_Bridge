@@ -17,4 +17,7 @@
     <color name="darkBlue">#1976D2</color>
     <color name="red">#C40000</color>
     <color name="green">#00CD34</color>
+    <color name="orange">#E63C0D</color>
+    <color name="light_green">#ABEDAB</color>
+    <color name="light_red">#F38C99</color>
 </resources>

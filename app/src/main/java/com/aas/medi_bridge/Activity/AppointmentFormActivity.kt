@@ -454,8 +454,87 @@ class AppointmentFormActivity : AppCompatActivity() {
         val doctorSpecialization = item.specialization
         val patientName = "$firstName $lastName"
 
-        // Save appointment notification locally
+        // Log the collected data
+        android.util.Log.d("AppointmentForm", "=== Appointment Data ===")
+        android.util.Log.d("AppointmentForm", "Doctor: $doctorName")
+        android.util.Log.d("AppointmentForm", "Patient: $patientName")
+        android.util.Log.d("AppointmentForm", "DOB: $dob")
+        android.util.Log.d("AppointmentForm", "Gender: $gender")
+        android.util.Log.d("AppointmentForm", "Contact: $contactNumber")
+        android.util.Log.d("AppointmentForm", "Email: $email")
+        android.util.Log.d("AppointmentForm", "Message: $message")
+        android.util.Log.d("AppointmentForm", "Date: $selectedDate")
+        android.util.Log.d("AppointmentForm", "Time: $selectedTime")
+        android.util.Log.d("AppointmentForm", "========================")
+
+        // Save appointment to Firebase database
+        saveAppointmentToFirebase(firstName, lastName, contactNumber, email, message, doctorName, doctorSpecialization)
+
+        // Also save appointment notification locally for backup
         saveAppointmentNotificationLocally(doctorName, patientName, doctorSpecialization)
+    }
+
+    private fun saveAppointmentToFirebase(
+        firstName: String,
+        lastName: String,
+        contactNumber: String,
+        email: String,
+        message: String,
+        doctorName: String,
+        doctorSpecialization: String
+    ) {
+        try {
+            val database = FirebaseDatabase.getInstance()
+            val appointmentsRef = database.getReference("appointments")
+
+            // Generate unique appointment ID
+            val appointmentId = appointmentsRef.push().key
+            if (appointmentId == null) {
+                android.util.Log.e("AppointmentForm", "Failed to generate appointment ID")
+                Toast.makeText(this@AppointmentFormActivity, "Failed to create appointment ID", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            // Create appointment object matching AppointmentModel structure exactly
+            val appointmentData = mapOf(
+                "id" to appointmentId,
+                "patientName" to "$firstName $lastName",
+                "patientPhone" to contactNumber,
+                "appointmentDate" to selectedDate,
+                "appointmentTime" to selectedTime,
+                "doctorId" to doctorName, // Use doctor ID if available, otherwise doctor name
+                "doctorEmail" to email, // Use doctor email if available
+                "doctorName" to doctorName,
+                "status" to "pending",
+                "symptoms" to message,
+                "timestamp" to System.currentTimeMillis()
+            )
+
+            android.util.Log.d("AppointmentForm", "Attempting to save appointment data: $appointmentData")
+
+            // Save to Firebase with improved error handling
+            appointmentsRef.child(appointmentId).setValue(appointmentData)
+                .addOnSuccessListener {
+                    android.util.Log.d("AppointmentForm", "Appointment saved successfully with ID: $appointmentId")
+                    Toast.makeText(this@AppointmentFormActivity, "Appointment booked successfully!", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { error ->
+                    android.util.Log.e("AppointmentForm", "Failed to save appointment: ${error.message}")
+
+                    val errorMessage = when {
+                        error.message?.contains("permission", ignoreCase = true) == true ->
+                            "Database permission denied. Please check Firebase security rules."
+                        error.message?.contains("network", ignoreCase = true) == true ->
+                            "Network error. Please check your internet connection."
+                        else -> "Failed to book appointment: ${error.message}"
+                    }
+
+                    Toast.makeText(this@AppointmentFormActivity, errorMessage, Toast.LENGTH_LONG).show()
+                }
+        } catch (e: Exception) {
+            android.util.Log.e("AppointmentForm", "Exception in saveAppointmentToFirebase: ${e.message}")
+            Toast.makeText(this@AppointmentFormActivity, "Error occurred while booking appointment", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun saveAppointmentNotificationLocally(

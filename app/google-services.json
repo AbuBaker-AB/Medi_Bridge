@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "616979017133",
+    "project_id": "medibridge-e3a68",
+    "storage_bucket": "medibridge-e3a68.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:616979017133:android:793afcf59464193a9d8524",
+        "android_client_info": {
+          "package_name": "com.aas.medi_bridge"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfOJymV2PYgBSPZbgwhE-G1M0Z6q8Myz4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

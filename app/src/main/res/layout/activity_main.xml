@@ -28,10 +28,11 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="32dp"
                 android:layout_marginEnd="16dp"
+                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
@@ -42,7 +43,7 @@
                         android:id="@+id/textView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Hello!"
+                        android:text="@string/hello"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -52,7 +53,7 @@
                         android:layout_width="300dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
-                        android:text="How Are You Today?"
+                        android:text="@string/how_are_you_today"
                         android:textColor="@color/black" />
                 </LinearLayout>
 
@@ -95,7 +96,7 @@
                     android:layout_marginTop="18dp"
                     android:layout_weight="1"
                     android:gravity="top"
-                    android:text="Specializations"
+                    android:text="@string/specializations"
                     android:textColor="@color/black"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -108,7 +109,7 @@
                     android:layout_marginEnd="16dp"
                     android:layout_weight="1"
                     android:gravity="center_horizontal"
-                    android:text="See all"
+                    android:text="@string/see_all"
                     android:textColor="@color/purple" />
             </LinearLayout>
 
@@ -156,7 +157,7 @@
                     android:layout_marginTop="18dp"
                     android:layout_weight="1"
                     android:gravity="top"
-                    android:text="Doctors you may looking for"
+                    android:text="@string/doctors_you_may_looking_for"
                     android:textColor="@color/black"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -220,6 +221,7 @@
             android:layout_height="60dp"
             android:layout_marginBottom="8dp"
             android:background="@color/white"
+            android:baselineAligned="false"
             android:orientation="horizontal"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
@@ -244,6 +246,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
+                    android:contentDescription="@string/home_icon"
                     android:src="@drawable/home_hospital_black" />
 
                 <TextView
@@ -251,7 +254,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Home"
+                    android:text="@string/home"
                     android:textAlignment="center"
                     android:textColor="@color/black"
                     android:textSize="10sp"
@@ -276,6 +279,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
+                    android:contentDescription="@string/search_icon"
                     android:src="@drawable/search_black" />
 
                 <TextView
@@ -283,7 +287,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Search"
+                    android:text="@string/search"
                     android:textAlignment="center"
                     android:textColor="@color/darkgrey"
                     android:textSize="10sp" />
@@ -316,6 +320,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_gravity="center"
+                        android:contentDescription="@string/notification_icon"
                         android:src="@drawable/notification_black" />
 
                     <!-- Notification Badge -->
@@ -328,7 +333,7 @@
                         android:layout_marginEnd="-4dp"
                         android:background="@drawable/circle_red"
                         android:gravity="center"
-                        android:text="1"
+                        android:text="@string/_1"
                         android:textColor="@color/white"
                         android:textSize="8sp"
                         android:textStyle="bold"
@@ -341,7 +346,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Notification"
+                    android:text="@string/notification"
                     android:textAlignment="center"
                     android:textColor="@color/darkgrey"
                     android:textSize="10sp" />
@@ -365,6 +370,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
+                    android:contentDescription="@string/doctor_icon"
                     android:src="@drawable/doctor_account_black" />
 
                 <TextView
@@ -372,7 +378,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Doctor"
+                    android:text="@string/doctor"
                     android:textAlignment="center"
                     android:textColor="@color/darkgrey"
                     android:textSize="10sp" />

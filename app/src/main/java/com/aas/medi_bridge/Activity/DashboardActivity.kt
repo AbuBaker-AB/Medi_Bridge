@@ -60,6 +60,12 @@ class DashboardActivity : AppCompatActivity() {
         // Setup RecyclerView
         appointmentsRecyclerView.layoutManager = LinearLayoutManager(this)
         appointmentAdapter = AppointmentAdapter(appointments)
+
+        // Enable doctor mode with status change callback
+        appointmentAdapter.enableDoctorMode { appointment, newStatus ->
+            handleAppointmentStatusChange(appointment, newStatus)
+        }
+
         appointmentsRecyclerView.adapter = appointmentAdapter
     }
 
@@ -75,7 +81,25 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
+    private fun handleAppointmentStatusChange(appointment: AppointmentModel, newStatus: String) {
+        // Update the appointment status locally
+        appointmentAdapter.updateAppointmentStatus(appointment.id, newStatus)
 
+        // Show a toast to confirm the action
+        val statusText = when (newStatus) {
+            "done" -> "marked as completed"
+            "missed" -> "marked as missed"
+            else -> "status updated"
+        }
+
+        android.widget.Toast.makeText(
+            this,
+            "Appointment for ${appointment.patientName} $statusText",
+            android.widget.Toast.LENGTH_SHORT
+        ).show()
+
+        android.util.Log.d("DashboardActivity", "Appointment ${appointment.id} status changed to: $newStatus")
+    }
 
     private fun logout() {
         try {

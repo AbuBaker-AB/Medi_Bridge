@@ -110,6 +110,8 @@ class MainActivity : BaseActivity() {
 
         // Search button
         binding.searchLayout.setOnClickListener {
+            resetBottomNavigation()
+            setActiveNavItem("doctors")
             val intent = Intent(this, SearchActivity::class.java)
             startActivity(intent)
         }
@@ -136,7 +138,7 @@ class MainActivity : BaseActivity() {
         binding.textViewHome.setTextColor(getColor(R.color.darkgrey))
         binding.textViewHome.setTypeface(null, android.graphics.Typeface.NORMAL)
 
-        binding.imageViewSearch.setImageResource(R.drawable.search_black)
+        binding.imageViewStethecope.setImageResource(R.drawable.stethoscopes)
         binding.textViewSearch.setTextColor(getColor(R.color.darkgrey))
 
         binding.imageViewNotification.setImageResource(R.drawable.notification_black)
@@ -153,8 +155,8 @@ class MainActivity : BaseActivity() {
                 binding.textViewHome.setTextColor(getColor(R.color.purple))
                 binding.textViewHome.setTypeface(null, android.graphics.Typeface.BOLD)
             }
-            "search" -> {
-                binding.imageViewSearch.setImageResource(R.drawable.search_purple)
+            "doctors" -> {
+                binding.imageViewStethecope.setImageResource(R.drawable.stethoscopes_purple)
                 binding.textViewSearch.setTextColor(getColor(R.color.purple))
             }
             "notification" -> {

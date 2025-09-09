@@ -21,9 +21,9 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/back_button"
             android:padding="8dp"
             android:src="@drawable/back"
-            android:contentDescription="@string/back_button"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -44,11 +44,12 @@
         <!-- Logo -->
         <ImageView
             android:id="@+id/logoImageView"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:layout_marginTop="16dp"
-            android:src="@drawable/medibridge_logo"
             android:contentDescription="@string/medibridge_logo"
+            android:scaleType="centerCrop"
+            android:src="@drawable/medi_bridge_logo"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/headerTitle" />
@@ -62,12 +63,13 @@
             android:layout_marginTop="32dp"
             android:layout_marginEnd="24dp"
             android:layout_marginBottom="24dp"
+            app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="16dp"
             app:cardElevation="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/logoImageView"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/logoImageView">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -108,37 +110,37 @@
 
                     <!-- Doctor Name -->
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="@string/doctor_name"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        android:hint="@string/doctor_name">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/loginNameEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:inputType="textPersonName"
                             android:textColor="@color/black"
-                            android:textColorHint="@color/darkgrey"
-                            android:inputType="textPersonName" />
+                            android:textColorHint="@color/darkgrey" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Doctor ID -->
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="@string/doctor_id"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        android:hint="@string/doctor_id">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/loginIdEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:inputType="text"
                             android:textColor="@color/black"
-                            android:textColorHint="@color/darkgrey"
-                            android:inputType="text" />
+                            android:textColorHint="@color/darkgrey" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -154,165 +156,165 @@
 
                     <!-- Doctor Name -->
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="@string/full_name_required"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        android:hint="@string/full_name_required">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/signupNameEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:inputType="textPersonName"
                             android:textColor="@color/black"
-                            android:textColorHint="@color/darkgrey"
-                            android:inputType="textPersonName" />
+                            android:textColorHint="@color/darkgrey" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Email -->
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="@string/email_address_required"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        android:hint="@string/email_address_required">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/signupEmailEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:inputType="textEmailAddress"
                             android:textColor="@color/black"
-                            android:textColorHint="@color/darkgrey"
-                            android:inputType="textEmailAddress" />
+                            android:textColorHint="@color/darkgrey" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Degrees -->
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="@string/degrees_required"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        android:hint="@string/degrees_required">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/signupDegreesEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:inputType="text"
                             android:textColor="@color/black"
-                            android:textColorHint="@color/darkgrey"
-                            android:inputType="text" />
+                            android:textColorHint="@color/darkgrey" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Specialty -->
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="@string/specialty_required"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        android:hint="@string/specialty_required">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/signupSpecialtyEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:inputType="text"
                             android:textColor="@color/black"
-                            android:textColorHint="@color/darkgrey"
-                            android:inputType="text" />
+                            android:textColorHint="@color/darkgrey" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Designation & Department -->
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="@string/designation_department_required"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        android:hint="@string/designation_department_required">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/signupDesignationEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:inputType="text"
                             android:textColor="@color/black"
-                            android:textColorHint="@color/darkgrey"
-                            android:inputType="text" />
+                            android:textColorHint="@color/darkgrey" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Chamber Name -->
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="@string/chamber_name_required"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        android:hint="@string/chamber_name_required">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/signupChamberNameEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:inputType="text"
                             android:textColor="@color/black"
-                            android:textColorHint="@color/darkgrey"
-                            android:inputType="text" />
+                            android:textColorHint="@color/darkgrey" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Chamber Address -->
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="@string/chamber_address_required"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        android:hint="@string/chamber_address_required">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/signupChamberAddressEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/black"
-                            android:textColorHint="@color/darkgrey"
                             android:inputType="textPostalAddress"
-                            android:maxLines="3" />
+                            android:maxLines="3"
+                            android:textColor="@color/black"
+                            android:textColorHint="@color/darkgrey" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Visiting Hour and Off Days -->
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="@string/visiting_hour_off_days_required"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        android:hint="@string/visiting_hour_off_days_required">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/signupVisitingHourEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/black"
-                            android:textColorHint="@color/darkgrey"
                             android:inputType="text"
-                            android:maxLines="2" />
+                            android:maxLines="2"
+                            android:textColor="@color/black"
+                            android:textColorHint="@color/darkgrey" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Appointment Number -->
                     <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
-                        android:hint="@string/appointment_number"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                        android:hint="@string/appointment_number">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/signupAppointmentNumberEditText"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:inputType="phone"
                             android:textColor="@color/black"
-                            android:textColorHint="@color/darkgrey"
-                            android:inputType="phone" />
+                            android:textColorHint="@color/darkgrey" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -325,7 +327,7 @@
                     android:layout_height="56dp"
                     android:layout_marginTop="24dp"
                     android:layout_marginBottom="16dp"
-                    android:background="@drawable/blue_bg"
+                    android:background="@drawable/submit_button_background"
                     android:text="@string/login"
                     android:textColor="@color/white"
                     android:textSize="16sp"
@@ -337,11 +339,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="8dp"
                     android:text="@string/no_account_signup"
                     android:textColor="@color/blue"
-                    android:textSize="14sp"
-                    android:background="?attr/selectableItemBackground"
-                    android:padding="8dp" />
+                    android:textSize="14sp" />
 
             </LinearLayout>
 

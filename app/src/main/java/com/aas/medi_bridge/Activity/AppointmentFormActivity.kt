@@ -473,11 +473,12 @@ class AppointmentFormActivity : AppCompatActivity() {
         // Use the selected date and time from the RecyclerViews
         val doctorName = item.name
         val doctorSpecialization = item.specialization
+        val patientName = "$firstName $lastName"
 
         // Log the collected data
         android.util.Log.d("AppointmentForm", "=== Appointment Data ===")
         android.util.Log.d("AppointmentForm", "Doctor: $doctorName")
-        android.util.Log.d("AppointmentForm", "Patient: $firstName $lastName")
+        android.util.Log.d("AppointmentForm", "Patient: $patientName")
         android.util.Log.d("AppointmentForm", "DOB: $dob")
         android.util.Log.d("AppointmentForm", "Gender: $gender")
         android.util.Log.d("AppointmentForm", "Contact: $contactNumber")
@@ -487,71 +488,51 @@ class AppointmentFormActivity : AppCompatActivity() {
         android.util.Log.d("AppointmentForm", "Time: $selectedTime")
         android.util.Log.d("AppointmentForm", "========================")
 
-        // Save appointment to Firebase database
-        saveAppointmentToFirebase(firstName, lastName, contactNumber, email, message, doctorName, doctorSpecialization)
+        // Save appointment notification locally
+        saveAppointmentNotificationLocally(doctorName, patientName, doctorSpecialization)
     }
 
-    private fun saveAppointmentToFirebase(
-        firstName: String,
-        lastName: String,
-        contactNumber: String,
-        email: String,
-        message: String,
+    private fun saveAppointmentNotificationLocally(
         doctorName: String,
+        patientName: String,
         doctorSpecialization: String
     ) {
         try {
-            val database = FirebaseDatabase.getInstance()
-            val appointmentsRef = database.getReference("appointments")
+            android.util.Log.d("AppointmentForm", "🔄 Starting to save appointment notification...")
+            android.util.Log.d("AppointmentForm", "Doctor: $doctorName")
+            android.util.Log.d("AppointmentForm", "Patient: $patientName")
+            android.util.Log.d("AppointmentForm", "Date: $selectedDate")
+            android.util.Log.d("AppointmentForm", "Time: $selectedTime")
+            android.util.Log.d("AppointmentForm", "Specialization: $doctorSpecialization")
 
-            // Generate unique appointment ID
-            val appointmentId = appointmentsRef.push().key
-            if (appointmentId == null) {
-                android.util.Log.e("AppointmentForm", "Failed to generate appointment ID")
-                Toast.makeText(this@AppointmentFormActivity, "Failed to create appointment ID", Toast.LENGTH_SHORT).show()
-                return
-            }
+            // Use a simple direct approach to save the notification
+            val sharedPreferences = getSharedPreferences("appointment_notifications", MODE_PRIVATE)
 
-            // Create appointment object matching AppointmentModel structure
-            val appointmentData = mapOf(
-                "id" to appointmentId,
-                "patientName" to "$firstName $lastName",
-                "patientPhone" to contactNumber,
-                "appointmentDate" to selectedDate,
-                "appointmentTime" to selectedTime,
-                "doctorId" to doctorName, // Using doctor name as identifier
-                "doctorEmail" to "", // Empty for now since DoctorsModel doesn't have email field
-                "doctorName" to doctorName,
-                "status" to "pending",
-                "symptoms" to message,
-                "timestamp" to System.currentTimeMillis()
-            )
+            // REMOVED: Clear any existing corrupted data first - this was deleting all previous appointments!
+            // sharedPreferences.edit().clear().commit()
+            android.util.Log.d("AppointmentForm", "Preserving existing appointments and adding new one")
 
-            android.util.Log.d("AppointmentForm", "Attempting to save appointment data: $appointmentData")
+            // Create a simple appointment string instead of JSON object
+            val appointmentData = "$patientName|$doctorName|$selectedDate|$selectedTime|${System.currentTimeMillis()}"
 
-            // Save to Firebase with improved error handling
-            appointmentsRef.child(appointmentId).setValue(appointmentData)
-                .addOnSuccessListener {
-                    android.util.Log.d("AppointmentForm", "Appointment saved successfully with ID: $appointmentId")
-                    Toast.makeText(this@AppointmentFormActivity, "Appointment booked successfully!", Toast.LENGTH_SHORT).show()
-                }
-                .addOnFailureListener { error ->
-                    android.util.Log.e("AppointmentForm", "Failed to save appointment: ${error.message}")
-                    android.util.Log.e("AppointmentForm", "Error details: ${error.cause}")
+            // Get existing appointments and add the new one
+            val existingAppointments = sharedPreferences.getStringSet("appointments_simple", mutableSetOf()) ?: mutableSetOf()
+            android.util.Log.d("AppointmentForm", "Found ${existingAppointments.size} existing appointments")
 
-                    val errorMessage = when {
-                        error.message?.contains("permission", ignoreCase = true) == true ->
-                            "Database permission denied. Please check Firebase security rules."
-                        error.message?.contains("network", ignoreCase = true) == true ->
-                            "Network error. Please check your internet connection."
-                        else -> "Failed to book appointment: ${error.message}"
-                    }
+            val updatedAppointments = existingAppointments.toMutableSet()
+            updatedAppointments.add(appointmentData)
 
-                    Toast.makeText(this@AppointmentFormActivity, errorMessage, Toast.LENGTH_LONG).show()
-                }
+            sharedPreferences.edit()
+                .putStringSet("appointments_simple", updatedAppointments)
+                .commit()
+
+            android.util.Log.d("AppointmentForm", "✅ Appointment saved successfully as: $appointmentData")
+            android.util.Log.d("AppointmentForm", "📊 Total appointments now: ${updatedAppointments.size}")
+            Toast.makeText(this, "Appointment booked successfully!", Toast.LENGTH_SHORT).show()
+
         } catch (e: Exception) {
-            android.util.Log.e("AppointmentForm", "Exception in saveAppointmentToFirebase: ${e.message}")
-            Toast.makeText(this@AppointmentFormActivity, "Error occurred while booking appointment", Toast.LENGTH_SHORT).show()
+            android.util.Log.e("AppointmentForm", "❌ Failed to save appointment notification: ${e.message}")
+            Toast.makeText(this, "Appointment booked, but failed to save notification", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -572,10 +553,10 @@ class AppointmentFormActivity : AppCompatActivity() {
 
         // Create the detailed message with doctor info, specialization, date, time and reminder
         val patientName = "${binding.etFirstName.text.toString().trim()} ${binding.etLastName.text.toString().trim()}"
-        val message = "Dear $patientName,\n\nYour appointment has been confirmed with Dr. $doctorName from $specialization department.\n\nDate: $date\nTime: $time\n\nPlease arrive 15 minutes before your appointed time.\nThank you!"
+        val message = "Dear $patientName,\n\nYour appointment has been confirmed with $doctorName from $specialization department.\n\nDate: $date\nTime: $time\n\nPlease arrive 15 minutes before your appointed time.\n\nThank you!"
 
         val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_medical_icon)
+            .setSmallIcon(R.drawable.medi_bridge_logo)
             .setContentTitle("Appointment Confirmed - Dr. $doctorName")
             .setContentText("$specialization Department • $date at $time")
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))
@@ -589,3 +570,4 @@ class AppointmentFormActivity : AppCompatActivity() {
         Toast.makeText(this, "Appointment confirmed! Check notification for details.", Toast.LENGTH_LONG).show()
     }
 }
+

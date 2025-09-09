@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.aas.medi_bridge.Adapter.CategoryAdapter
 import com.aas.medi_bridge.Adapter.TopDoctorAdapter
 import com.aas.medi_bridge.Domain.DoctorsModel
+import com.aas.medi_bridge.R
 import com.aas.medi_bridge.ViewModel.MainviewModel
 import com.aas.medi_bridge.databinding.ActivityMainBinding
 
@@ -100,10 +101,96 @@ class MainActivity : BaseActivity() {
     }
 
     private fun setupBottomNavigation() {
-        // Set click listener for search button using the ID we added
+        // Home button - already selected by default
+        binding.homeLayout.setOnClickListener {
+            // Already on home, just refresh the current state
+            resetBottomNavigation()
+            setActiveNavItem("home")
+        }
+
+        // Search button
         binding.searchLayout.setOnClickListener {
             val intent = Intent(this, SearchActivity::class.java)
             startActivity(intent)
         }
+
+        // Notification button
+        binding.notificationLayout.setOnClickListener {
+            val intent = Intent(this, NotificationActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Doctor button - navigate to doctor login
+        binding.doctorLayout.setOnClickListener {
+            val intent = Intent(this, DoctorActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Set home as default active
+        setActiveNavItem("home")
+    }
+
+    private fun resetBottomNavigation() {
+        // Reset all icons to black and text to dark grey
+        binding.imageViewHome.setImageResource(R.drawable.home_hospital_black)
+        binding.textViewHome.setTextColor(getColor(R.color.darkgrey))
+        binding.textViewHome.setTypeface(null, android.graphics.Typeface.NORMAL)
+
+        binding.imageViewSearch.setImageResource(R.drawable.search_black)
+        binding.textViewSearch.setTextColor(getColor(R.color.darkgrey))
+
+        binding.imageViewNotification.setImageResource(R.drawable.notification_black)
+        binding.textViewNotification.setTextColor(getColor(R.color.darkgrey))
+
+        binding.imageViewDoctor.setImageResource(R.drawable.doctor_account_black)
+        binding.textViewDoctor.setTextColor(getColor(R.color.darkgrey))
+    }
+
+    private fun setActiveNavItem(activeItem: String) {
+        when (activeItem) {
+            "home" -> {
+                binding.imageViewHome.setImageResource(R.drawable.home_hospital_purple)
+                binding.textViewHome.setTextColor(getColor(R.color.purple))
+                binding.textViewHome.setTypeface(null, android.graphics.Typeface.BOLD)
+            }
+            "search" -> {
+                binding.imageViewSearch.setImageResource(R.drawable.search_purple)
+                binding.textViewSearch.setTextColor(getColor(R.color.purple))
+            }
+            "notification" -> {
+                binding.imageViewNotification.setImageResource(R.drawable.notification_purple)
+                binding.textViewNotification.setTextColor(getColor(R.color.purple))
+            }
+            "doctor" -> {
+                binding.imageViewDoctor.setImageResource(R.drawable.doctor_account_purple)
+                binding.textViewDoctor.setTextColor(getColor(R.color.purple))
+            }
+        }
+    }
+
+    // Function to update notification badge count
+    private fun updateNotificationBadge(count: Int) {
+        if (count > 0) {
+            binding.notificationBadge.visibility = View.VISIBLE
+            binding.notificationBadge.text = if (count > 9) "9+" else count.toString()
+        } else {
+            binding.notificationBadge.visibility = View.GONE
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Reset navigation state when returning to main activity
+        resetBottomNavigation()
+        setActiveNavItem("home")
+
+        // Load and show notification count
+        loadNotificationCount()
+    }
+
+    private fun loadNotificationCount() {
+        val sharedPref = getSharedPreferences("notifications", MODE_PRIVATE)
+        val notificationCount = sharedPref.getInt("notification_count", 0)
+        updateNotificationBadge(notificationCount)
     }
 }

@@ -300,11 +300,16 @@
                 android:gravity="center"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:focusable="true">
+                android:focusable="true"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
-                <RelativeLayout
+                <FrameLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:padding="1dp">
 
                     <ImageView
                         android:id="@+id/imageViewNotification"
@@ -318,9 +323,8 @@
                         android:id="@+id/notificationBadge"
                         android:layout_width="16dp"
                         android:layout_height="16dp"
-                        android:layout_alignTop="@+id/imageViewNotification"
-                        android:layout_alignEnd="@+id/imageViewNotification"
-                        android:layout_marginTop="-4dp"
+                        android:layout_gravity="top|end"
+                        android:layout_marginTop="-2dp"
                         android:layout_marginEnd="-4dp"
                         android:background="@drawable/circle_red"
                         android:gravity="center"
@@ -328,9 +332,9 @@
                         android:textColor="@color/white"
                         android:textSize="8sp"
                         android:textStyle="bold"
-                        android:visibility="gone" />
+                        android:visibility="invisible" />
 
-                </RelativeLayout>
+                </FrameLayout>
 
                 <TextView
                     android:id="@+id/textViewNotification"

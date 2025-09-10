@@ -139,7 +139,7 @@ class DashboardActivity : AppCompatActivity() {
     private fun loadDoctorInfo() {
         val doctorName = sharedPreferences.getString("doctor_name", "Doctor")
         val doctorSpecialty = sharedPreferences.getString("doctor_specialty", "General Practice")
-        welcomeText.text = "Welcome, Dr. $doctorName"
+        welcomeText.text = "Welcome, $doctorName"
     }
 
     private fun loadAppointments() {

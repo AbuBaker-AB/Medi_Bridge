@@ -49,4 +49,24 @@
     <string name="notification">Notification</string>
     <string name="doctor_icon">Doctor Icon</string>
     <string name="doctor">Doctor</string>
+    <string name="medical_icon">Medical Icon</string>
+    <string name="medical_appointment">Medical Appointment</string>
+    <string name="dr_john_doe">Dr. John Doe</string>
+    <string name="patient_s_details">Patient\'s Details</string>
+    <string name="first_name">First Name *</string>
+    <string name="patients_first_name">First Name</string>
+    <string name="patients_last_name">Last Name *</string>
+    <string name="last_name">Last Name</string>
+    <string name="date_of_birth">Date of Birth *</string>
+    <string name="select_date_of_birth">Select Date of Birth</string>
+    <string name="gender">Gender *</string>
+    <string name="contact_number">Contact Number *</string>
+    <string name="_880_123_456_789">+880 123-456-789</string>
+    <string name="email_id">Email id</string>
+    <string name="enter_patient_s_email_id">Enter patient\'s email id</string>
+    <string name="available_dates">Available Dates *</string>
+    <string name="available_times">Available Times *</string>
+    <string name="message_optional">Message (Optional)</string>
+    <string name="enter_any_additional_message_or_special_requirements">Enter any additional message or special requirements...</string>
+    <string name="confirm_appointment">Confirm Appointment</string>
 </resources>

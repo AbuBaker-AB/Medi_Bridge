@@ -28,11 +28,10 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="32dp"
                 android:layout_marginEnd="16dp"
-                android:baselineAligned="false"
                 android:orientation="horizontal">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
@@ -43,7 +42,7 @@
                         android:id="@+id/textView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/hello"
+                        android:text="Hello!"
                         android:textColor="@color/black"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -53,7 +52,7 @@
                         android:layout_width="300dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
-                        android:text="@string/how_are_you_today"
+                        android:text="How Are You Today?"
                         android:textColor="@color/black" />
                 </LinearLayout>
 
@@ -69,7 +68,6 @@
                     android:id="@+id/imageView2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="32dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -84,7 +82,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="16dp"
                 android:orientation="horizontal">
 
@@ -96,7 +94,7 @@
                     android:layout_marginTop="18dp"
                     android:layout_weight="1"
                     android:gravity="top"
-                    android:text="@string/specializations"
+                    android:text="Specializations"
                     android:textColor="@color/black"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -109,7 +107,7 @@
                     android:layout_marginEnd="16dp"
                     android:layout_weight="1"
                     android:gravity="center_horizontal"
-                    android:text="@string/see_all"
+                    android:text="See all"
                     android:textColor="@color/purple" />
             </LinearLayout>
 
@@ -157,7 +155,7 @@
                     android:layout_marginTop="18dp"
                     android:layout_weight="1"
                     android:gravity="top"
-                    android:text="@string/doctors_you_may_looking_for"
+                    android:text="Doctors you may looking for"
                     android:textColor="@color/black"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -221,7 +219,6 @@
             android:layout_height="60dp"
             android:layout_marginBottom="8dp"
             android:background="@color/white"
-            android:baselineAligned="false"
             android:orientation="horizontal"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
@@ -246,7 +243,6 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:contentDescription="@string/home_icon"
                     android:src="@drawable/home_hospital_black" />
 
                 <TextView
@@ -254,7 +250,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="@string/home"
+                    android:text="Home"
                     android:textAlignment="center"
                     android:textColor="@color/black"
                     android:textSize="10sp"
@@ -275,19 +271,18 @@
                 android:focusable="true">
 
                 <ImageView
-                    android:id="@+id/imageViewSearch"
+                    android:id="@+id/imageViewStethecope"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:contentDescription="@string/search_icon"
-                    android:src="@drawable/search_black" />
+                    android:src="@drawable/stethoscopes" />
 
                 <TextView
                     android:id="@+id/textViewSearch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="@string/search"
+                    android:text="Doctors"
                     android:textAlignment="center"
                     android:textColor="@color/darkgrey"
                     android:textSize="10sp" />
@@ -304,23 +299,17 @@
                 android:gravity="center"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:focusable="true"
-                android:clipChildren="false"
-                android:clipToPadding="false">
+                android:focusable="true">
 
-                <FrameLayout
+                <RelativeLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:clipChildren="false"
-                    android:clipToPadding="false"
-                    android:padding="1dp">
+                    android:layout_height="wrap_content">
 
                     <ImageView
                         android:id="@+id/imageViewNotification"
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_gravity="center"
-                        android:contentDescription="@string/notification_icon"
                         android:src="@drawable/notification_black" />
 
                     <!-- Notification Badge -->
@@ -328,25 +317,26 @@
                         android:id="@+id/notificationBadge"
                         android:layout_width="16dp"
                         android:layout_height="16dp"
-                        android:layout_gravity="top|end"
-                        android:layout_marginTop="-2dp"
+                        android:layout_alignTop="@+id/imageViewNotification"
+                        android:layout_alignEnd="@+id/imageViewNotification"
+                        android:layout_marginTop="-4dp"
                         android:layout_marginEnd="-4dp"
                         android:background="@drawable/circle_red"
                         android:gravity="center"
-                        android:text="@string/_1"
+                        android:text="1"
                         android:textColor="@color/white"
                         android:textSize="8sp"
                         android:textStyle="bold"
-                        android:visibility="invisible" />
+                        android:visibility="gone" />
 
-                </FrameLayout>
+                </RelativeLayout>
 
                 <TextView
                     android:id="@+id/textViewNotification"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="@string/notification"
+                    android:text="Notification"
                     android:textAlignment="center"
                     android:textColor="@color/darkgrey"
                     android:textSize="10sp" />
@@ -370,7 +360,6 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:contentDescription="@string/doctor_icon"
                     android:src="@drawable/doctor_account_black" />
 
                 <TextView
@@ -378,7 +367,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="@string/doctor"
+                    android:text="Doctor"
                     android:textAlignment="center"
                     android:textColor="@color/darkgrey"
                     android:textSize="10sp" />

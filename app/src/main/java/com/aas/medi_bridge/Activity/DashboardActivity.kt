@@ -60,6 +60,12 @@ class DashboardActivity : AppCompatActivity() {
         // Setup RecyclerView
         appointmentsRecyclerView.layoutManager = LinearLayoutManager(this)
         appointmentAdapter = AppointmentAdapter(appointments)
+
+        // Enable doctor mode with status change callback
+        appointmentAdapter.enableDoctorMode { appointment, newStatus ->
+            handleAppointmentStatusChange(appointment, newStatus)
+        }
+
         appointmentsRecyclerView.adapter = appointmentAdapter
     }
 
@@ -75,18 +81,42 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
+    private fun handleAppointmentStatusChange(appointment: AppointmentModel, newStatus: String) {
+        // Update the appointment status locally
+        appointmentAdapter.updateAppointmentStatus(appointment.id, newStatus)
+
+        // Show a toast to confirm the action
+        val statusText = when (newStatus) {
+            "done" -> "marked as completed"
+            "missed" -> "marked as missed"
+            else -> "status updated"
+        }
+
+        android.widget.Toast.makeText(
+            this,
+            "Appointment for ${appointment.patientName} $statusText",
+            android.widget.Toast.LENGTH_SHORT
+        ).show()
+
+        android.util.Log.d("DashboardActivity", "Appointment ${appointment.id} status changed to: $newStatus")
+    }
+
     private fun logout() {
         try {
+            android.util.Log.d("DashboardActivity", "Starting logout process...")
+
             // Clear stored doctor info first
             val editor = sharedPreferences.edit()
             editor.clear()
             editor.apply()
+            android.util.Log.d("DashboardActivity", "SharedPreferences cleared")
 
             // Sign out from Firebase Auth (if signed in)
             try {
                 com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
+                android.util.Log.d("DashboardActivity", "Firebase auth sign out completed")
             } catch (authError: Exception) {
-                // Handle auth error silently
+                android.util.Log.w("DashboardActivity", "Firebase auth sign out failed (might not be signed in): ${authError.message}")
             }
 
             // Go back to DoctorActivity (login screen) with proper flags
@@ -95,7 +125,9 @@ class DashboardActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
 
+            android.util.Log.d("DashboardActivity", "Logout completed successfully")
         } catch (e: Exception) {
+            android.util.Log.e("DashboardActivity", "Error during logout: ${e.message}")
             // Even if there's an error, try to go back to login
             val intent = Intent(this@DashboardActivity, DoctorActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -116,15 +148,20 @@ class DashboardActivity : AppCompatActivity() {
         val doctorEmail = sharedPreferences.getString("doctor_email", "")
 
         if (doctorName.isNullOrEmpty() && doctorId.isNullOrEmpty() && doctorEmail.isNullOrEmpty()) {
+            android.util.Log.e("DashboardActivity", "No doctor info found in preferences")
             showEmptyState()
             return
         }
+
+        android.util.Log.d("DashboardActivity", "Loading appointments for doctor: $doctorName (ID: $doctorId, Email: $doctorEmail)")
 
         val database = FirebaseDatabase.getInstance()
         val appointmentsRef = database.getReference("appointments")
 
         appointmentsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                android.util.Log.d("DashboardActivity", "Appointments snapshot received, children: ${snapshot.childrenCount}")
+
                 appointments.clear()
 
                 for (appointmentSnapshot in snapshot.children) {
@@ -140,11 +177,12 @@ class DashboardActivity : AppCompatActivity() {
                                 // Filter appointments for the current week
                                 if (isAppointmentInCurrentWeek(appointment.appointmentDate)) {
                                     appointments.add(appointment)
+                                    android.util.Log.d("DashboardActivity", "Added appointment for patient: ${appointment.patientName} on ${appointment.appointmentDate}")
                                 }
                             }
                         }
                     } catch (e: Exception) {
-                        // Handle parsing error silently
+                        android.util.Log.e("DashboardActivity", "Error parsing appointment: ${e.message}")
                     }
                 }
 
@@ -155,6 +193,8 @@ class DashboardActivity : AppCompatActivity() {
                         else -> a1.appointmentTime.compareTo(a2.appointmentTime)
                     }
                 }
+
+                android.util.Log.d("DashboardActivity", "Total weekly appointments loaded: ${appointments.size}")
 
                 runOnUiThread {
                     if (appointments.isEmpty()) {
@@ -167,6 +207,7 @@ class DashboardActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(error: DatabaseError) {
+                android.util.Log.e("DashboardActivity", "Failed to load appointments: ${error.message}")
                 runOnUiThread {
                     showEmptyState()
                 }
@@ -184,6 +225,7 @@ class DashboardActivity : AppCompatActivity() {
             // This assumes appointments are for the current week by default
             return true
         } catch (e: Exception) {
+            android.util.Log.e("DashboardActivity", "Error checking appointment date: ${e.message}")
             return true // Show all appointments if date parsing fails
         }
     }

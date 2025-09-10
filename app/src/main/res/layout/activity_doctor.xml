@@ -136,7 +136,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
                         android:hint="@string/doctor_id"
-                        app:hintTextAppearance="@color/darkgrey"
                         app:hintTextColor="@color/darkgrey"
                         app:boxStrokeColor="@color/darkgrey"
                         app:boxStrokeWidth="1.5dp"

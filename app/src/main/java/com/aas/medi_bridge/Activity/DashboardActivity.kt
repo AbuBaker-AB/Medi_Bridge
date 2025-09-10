@@ -19,6 +19,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import kotlin.or
 
 class DashboardActivity : AppCompatActivity() {
 
@@ -72,7 +73,9 @@ class DashboardActivity : AppCompatActivity() {
     private fun setupClickListeners() {
         // Fix back button to navigate properly
         backBtn.setOnClickListener {
-            // Instead of onBackPressed, finish the activity to go back to login
+            val intent = Intent(this, MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            startActivity(intent)
             finish()
         }
 

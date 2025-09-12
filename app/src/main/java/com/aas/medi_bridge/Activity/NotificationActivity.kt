@@ -206,7 +206,7 @@ class NotificationActivity : BaseActivity() {
 
                 // Get all appointments
                 val appointmentsStringSet = appointmentsPrefs.getStringSet("appointments_simple", mutableSetOf()) ?: mutableSetOf()
-
+                
                 // Count unread notifications
                 var unreadCount = 0
                 appointmentsStringSet.forEach { appointmentString ->
@@ -215,7 +215,7 @@ class NotificationActivity : BaseActivity() {
                         if (parts.size >= 5) {
                             val timestamp = parts[4].toLongOrNull() ?: System.currentTimeMillis()
                             val notificationId = timestamp.toString()
-
+                            
                             // Check if this notification is read
                             val isRead = readNotificationsPrefs.getBoolean(notificationId, false)
                             if (!isRead) {

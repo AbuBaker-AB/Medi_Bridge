@@ -1,4 +1,4 @@
-package com.aas.medi_bridge
+package com.aas.medi_bridge.Activity
 
 import android.os.Bundle
 import android.view.WindowManager

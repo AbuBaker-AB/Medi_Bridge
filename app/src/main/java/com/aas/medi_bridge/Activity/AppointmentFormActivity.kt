@@ -1288,15 +1288,15 @@ class AppointmentFormActivity : AppCompatActivity() {
                 return
             }
 
-            // Create appointment object matching AppointmentModel structure exactly
+            // Create appointment object with correct doctor information
             val appointmentData = mapOf(
                 "id" to appointmentId,
                 "patientName" to "$firstName $lastName",
                 "patientPhone" to contactNumber,
                 "appointmentDate" to selectedDate,
                 "appointmentTime" to selectedTime,
-                "doctorId" to doctorName, // Use doctor ID if available, otherwise doctor name
-                "doctorEmail" to email, // Use doctor email if available
+                "doctorId" to doctorName, // Use doctor name as ID since DoctorsModel has no unique ID field
+                "doctorEmail" to "", // DoctorsModel has no email field
                 "doctorName" to doctorName,
                 "status" to "pending",
                 "symptoms" to message,

@@ -60,6 +60,12 @@ class DashboardActivity : AppCompatActivity() {
         // Setup RecyclerView
         appointmentsRecyclerView.layoutManager = LinearLayoutManager(this)
         appointmentAdapter = AppointmentAdapter(appointments)
+
+        // Enable doctor mode with status change callback
+        appointmentAdapter.enableDoctorMode { appointment, newStatus ->
+            handleAppointmentStatusChange(appointment, newStatus)
+        }
+
         appointmentsRecyclerView.adapter = appointmentAdapter
     }
 
@@ -75,7 +81,25 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
+    private fun handleAppointmentStatusChange(appointment: AppointmentModel, newStatus: String) {
+        // Update the appointment status locally
+        appointmentAdapter.updateAppointmentStatus(appointment.id, newStatus)
 
+        // Show a toast to confirm the action
+        val statusText = when (newStatus) {
+            "done" -> "marked as completed"
+            "missed" -> "marked as missed"
+            else -> "status updated"
+        }
+
+        android.widget.Toast.makeText(
+            this,
+            "Appointment for ${appointment.patientName} $statusText",
+            android.widget.Toast.LENGTH_SHORT
+        ).show()
+
+        android.util.Log.d("DashboardActivity", "Appointment ${appointment.id} status changed to: $newStatus")
+    }
 
     private fun logout() {
         try {
@@ -115,21 +139,19 @@ class DashboardActivity : AppCompatActivity() {
     private fun loadDoctorInfo() {
         val doctorName = sharedPreferences.getString("doctor_name", "Doctor")
         val doctorSpecialty = sharedPreferences.getString("doctor_specialty", "General Practice")
-        welcomeText.text = "Welcome, Dr. $doctorName"
+        welcomeText.text = "Welcome, $doctorName"
     }
 
     private fun loadAppointments() {
         val doctorName = sharedPreferences.getString("doctor_name", "")
-        val doctorId = sharedPreferences.getString("doctor_id", "")
-        val doctorEmail = sharedPreferences.getString("doctor_email", "")
 
-        if (doctorName.isNullOrEmpty() && doctorId.isNullOrEmpty() && doctorEmail.isNullOrEmpty()) {
-            android.util.Log.e("DashboardActivity", "No doctor info found in preferences")
+        if (doctorName.isNullOrEmpty()) {
+            android.util.Log.e("DashboardActivity", "No doctor name found in preferences")
             showEmptyState()
             return
         }
 
-        android.util.Log.d("DashboardActivity", "Loading appointments for doctor: $doctorName (ID: $doctorId, Email: $doctorEmail)")
+        android.util.Log.d("DashboardActivity", "Loading appointments for doctor: $doctorName")
 
         val database = FirebaseDatabase.getInstance()
         val appointmentsRef = database.getReference("appointments")
@@ -144,17 +166,17 @@ class DashboardActivity : AppCompatActivity() {
                     try {
                         val appointment = appointmentSnapshot.getValue(AppointmentModel::class.java)
                         if (appointment != null) {
-                            // Filter by doctor name, doctor ID, or doctor email
+                            // SIMPLE name-based filtering: Only match by doctor name
                             val matchesByName = appointment.doctorName.equals(doctorName, ignoreCase = true)
-                            val matchesById = appointment.doctorId == doctorId
-                            val matchesByEmail = appointment.doctorEmail.equals(doctorEmail, ignoreCase = true)
 
-                            if (matchesByName || matchesById || matchesByEmail) {
+                            if (matchesByName) {
                                 // Filter appointments for the current week
                                 if (isAppointmentInCurrentWeek(appointment.appointmentDate)) {
                                     appointments.add(appointment)
-                                    android.util.Log.d("DashboardActivity", "Added appointment for patient: ${appointment.patientName} on ${appointment.appointmentDate}")
+                                    android.util.Log.d("DashboardActivity", "✅ Added appointment for patient: ${appointment.patientName} on ${appointment.appointmentDate} (Doctor: ${appointment.doctorName})")
                                 }
+                            } else {
+                                android.util.Log.d("DashboardActivity", "❌ Filtered out appointment - Doctor: ${appointment.doctorName}, Expected: $doctorName")
                             }
                         }
                     } catch (e: Exception) {

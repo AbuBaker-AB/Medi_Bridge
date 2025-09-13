@@ -30,7 +30,6 @@ class DetailActivity : BaseActivity() {
         }
 
         if (intentItem == null) {
-            android.util.Log.e("DetailActivity", "No doctor data received")
             finish()
             return
         }
@@ -55,7 +54,7 @@ class DetailActivity : BaseActivity() {
                     val intent = Intent(Intent.ACTION_DIAL, uri)
                     startActivity(intent)
                 } catch (e: Exception) {
-                    android.util.Log.e("DetailActivity", "Error opening phone dialer: ${e.message}")
+                    // Handle error silently
                 }
             }
 
@@ -71,13 +70,12 @@ class DetailActivity : BaseActivity() {
                     val intent = Intent(Intent.ACTION_VIEW, locationUrl.toUri())
                     startActivity(intent)
                 } catch (e: Exception) {
-                    android.util.Log.e("DetailActivity", "Error opening location: ${e.message}")
                     // Fallback to open Google Maps app or web
                     try {
                         val fallbackIntent = Intent(Intent.ACTION_VIEW, "https://maps.google.com".toUri())
                         startActivity(fallbackIntent)
                     } catch (fallbackException: Exception) {
-                        android.util.Log.e("DetailActivity", "Error opening fallback location: ${fallbackException.message}")
+                        // Handle fallback error silently
                     }
                 }
             }
@@ -117,18 +115,9 @@ class DetailActivity : BaseActivity() {
 
             // Get visiting hour from main model or first chamber with better logic
             val visitingHour = when {
-                item.visiting_hour.isNotBlank() -> {
-                    android.util.Log.d("DetailActivity", "Using main visiting_hour: '${item.visiting_hour}'")
-                    item.visiting_hour
-                }
-                item.chambers.isNotEmpty() && item.chambers[0].visiting_hour.isNotBlank() -> {
-                    android.util.Log.d("DetailActivity", "Using chamber visiting_hour: '${item.chambers[0].visiting_hour}'")
-                    item.chambers[0].visiting_hour
-                }
-                else -> {
-                    android.util.Log.d("DetailActivity", "No visiting hour found, using default")
-                    "Not Available"
-                }
+                item.visiting_hour.isNotBlank() -> item.visiting_hour
+                item.chambers.isNotEmpty() && item.chambers[0].visiting_hour.isNotBlank() -> item.chambers[0].visiting_hour
+                else -> "Not Available"
             }
             visitingHourTxt.text = android.text.SpannableStringBuilder().apply {
                 append("Visiting Hour: ", android.text.style.StyleSpan(android.graphics.Typeface.BOLD), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -163,11 +152,6 @@ class DetailActivity : BaseActivity() {
                 intent.putExtra("Object", item) // Pass the entire doctor object
                 startActivity(intent)
             }
-
-            // Debug: Log the processed image URL
-            android.util.Log.d("DetailActivity", "Original image URL: ${item.image}")
-            android.util.Log.d("DetailActivity", "Processed image URL: $imageUrl")
-            android.util.Log.d("DetailActivity", "Chambers available: ${item.chambers.size}")
         }
     }
 }

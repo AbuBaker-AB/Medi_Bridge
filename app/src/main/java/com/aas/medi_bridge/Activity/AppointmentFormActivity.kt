@@ -18,18 +18,24 @@ import androidx.core.app.NotificationCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.aas.medi_bridge.Adapter.DateChipAdapter
 import com.aas.medi_bridge.Adapter.TimeChipAdapter
+import com.aas.medi_bridge.Adapter.TimeSlot
 import com.aas.medi_bridge.Domain.DoctorsModel
 import com.aas.medi_bridge.R
 import com.aas.medi_bridge.databinding.ActivityAppointmentFormBinding
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.getValue
 
 class AppointmentFormActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAppointmentFormBinding
     private lateinit var item: DoctorsModel
     private var selectedDate: String = ""
     private var selectedTime: String = ""
+    private var bookedSlots: MutableMap<String, Set<String>> = mutableMapOf() // date -> set of booked times
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,39 +83,83 @@ class AppointmentFormActivity : AppCompatActivity() {
     }
 
     private fun setupAvailableDatesAndTimes() {
-        // Debug: Log the visiting hours from database
+        // Get visiting hours from database
         val visitingHour = when {
             item.visiting_hour.isNotBlank() -> item.visiting_hour
             item.chambers.isNotEmpty() && item.chambers[0].visiting_hour.isNotBlank() -> item.chambers[0].visiting_hour
             else -> "9am to 5pm"
         }
-        android.util.Log.d("AppointmentForm", "Raw visiting hours from database: '$visitingHour'")
 
         val availableDates = generateAvailableDates()
         val dateAdapter = DateChipAdapter(availableDates) { date ->
             selectedDate = date
-            android.util.Log.d("AppointmentForm", "Selected date: $date")
-
-            // Update available times for selected date
-            val availableTimes = getAvailableTimesForDoctor()
-            val timeAdapter = TimeChipAdapter(availableTimes) { time ->
-                selectedTime = time
-                android.util.Log.d("AppointmentForm", "Selected time: $time")
-            }
-            binding.availableTimesRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-            binding.availableTimesRecyclerView.adapter = timeAdapter
+            // Load booked appointments for this doctor and date, then update time slots
+            loadBookedAppointments(date)
         }
 
         binding.availableDatesRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.availableDatesRecyclerView.adapter = dateAdapter
 
-        // Show available times immediately (not just when date is selected)
-        val availableTimes = getAvailableTimesForDoctor()
-        android.util.Log.d("AppointmentForm", "Generated time slots: $availableTimes")
-        val timeAdapter = TimeChipAdapter(availableTimes) { time ->
-            selectedTime = time
-            android.util.Log.d("AppointmentForm", "Selected time: $time")
+        // Initialize with first date if available
+        if (availableDates.isNotEmpty()) {
+            selectedDate = availableDates[0]
+            loadBookedAppointments(selectedDate)
         }
+    }
+
+    private fun loadBookedAppointments(date: String) {
+        val database = FirebaseDatabase.getInstance()
+        val appointmentsRef = database.getReference("appointments")
+
+        // Query appointments for this doctor on the selected date
+        appointmentsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val bookedTimes = mutableSetOf<String>()
+
+                for (appointmentSnapshot in snapshot.children) {
+                    val doctorId = appointmentSnapshot.child("doctorId").getValue(String::class.java)
+                    val doctorName = appointmentSnapshot.child("doctorName").getValue(String::class.java)
+                    val appointmentDate = appointmentSnapshot.child("appointmentDate").getValue(String::class.java)
+                    val appointmentTime = appointmentSnapshot.child("appointmentTime").getValue(String::class.java)
+                    val status = appointmentSnapshot.child("status").getValue(String::class.java)
+
+                    // Use doctor name for comparison with fallback to doctorId
+                    val isDoctorMatch = doctorName == item.name || doctorId == item.name
+
+                    if (isDoctorMatch && appointmentDate == date &&
+                        appointmentTime != null && status != "cancelled") {
+                        bookedTimes.add(appointmentTime)
+                    }
+                }
+
+                // Store booked slots for this date
+                bookedSlots[date] = bookedTimes
+
+                // Update time slots UI
+                updateTimeSlots(date, bookedTimes)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(this@AppointmentFormActivity,
+                    "Failed to load booking information: ${error.message}", Toast.LENGTH_SHORT).show()
+                // Show default time slots without booking info
+                updateTimeSlots(date, emptySet())
+            }
+        })
+    }
+
+    private fun updateTimeSlots(date: String, bookedTimes: Set<String>) {
+        val allAvailableTimes = getAvailableTimesForDoctor()
+
+        // Create TimeSlot objects with booking status
+        val timeSlots = allAvailableTimes.map { time ->
+            TimeSlot(time = time, isBooked = bookedTimes.contains(time))
+        }
+
+        val timeAdapter = TimeChipAdapter(timeSlots) { time ->
+            selectedTime = time
+        }
+
         binding.availableTimesRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.availableTimesRecyclerView.adapter = timeAdapter
     }
@@ -185,20 +235,15 @@ class AppointmentFormActivity : AppCompatActivity() {
     private fun parseVisitingHoursToTimeSlots(visitingHours: String): List<String> {
         val timeSlots = mutableListOf<String>()
 
-        android.util.Log.d("AppointmentForm", "Parsing visiting hours: '$visitingHours'")
-
         try {
             // Clean the visiting hours string - remove parentheses content first
             val cleanHours = visitingHours.replace(Regex("\\([^)]*\\)"), "").trim()
-            android.util.Log.d("AppointmentForm", "Cleaned hours: '$cleanHours'")
 
             // Handle multiple time ranges separated by "&"
             val timeRanges = cleanHours.split("&")
-            android.util.Log.d("AppointmentForm", "Time ranges: $timeRanges")
 
             for (range in timeRanges) {
                 val trimmedRange = range.trim()
-                android.util.Log.d("AppointmentForm", "Processing range: '$trimmedRange'")
 
                 // Extract start and end times using " to " as separator
                 val parts = trimmedRange.split(" to ")
@@ -206,34 +251,25 @@ class AppointmentFormActivity : AppCompatActivity() {
                     val startTimeRaw = parts[0].trim()
                     val endTimeRaw = parts[1].trim()
 
-                    android.util.Log.d("AppointmentForm", "Start time raw: '$startTimeRaw', End time raw: '$endTimeRaw'")
-
                     val startTime = normalizeTimeFormat(startTimeRaw)
                     val endTime = normalizeTimeFormat(endTimeRaw)
 
-                    android.util.Log.d("AppointmentForm", "Normalized - Start: '$startTime', End: '$endTime'")
-
                     val slots = generateTimeSlots(startTime, endTime)
-                    android.util.Log.d("AppointmentForm", "Generated slots for range: $slots")
                     timeSlots.addAll(slots)
                 }
             }
         } catch (e: Exception) {
-            android.util.Log.e("AppointmentForm", "Error parsing visiting hours: ${e.message}")
             // Fallback to default times
             timeSlots.addAll(listOf("9:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:00 PM", "4:00 PM"))
         }
 
         val result = timeSlots.ifEmpty { listOf("9:00 AM", "10:00 AM", "11:00 AM", "2:00 PM", "3:00 PM", "4:00 PM") }
-        android.util.Log.d("AppointmentForm", "Final time slots: $result")
         return result
     }
 
     private fun normalizeTimeFormat(time: String): String {
         // Remove any extra spaces and unwanted characters but keep the basic time format
         val cleaned = time.trim().replace(Regex("\\s+"), " ")
-
-        android.util.Log.d("AppointmentForm", "Normalizing time: '$time' -> '$cleaned'")
 
         // Handle different time formats from database
         return when {
@@ -257,8 +293,6 @@ class AppointmentFormActivity : AppCompatActivity() {
             }
             // If already in correct format, return as is
             else -> cleaned
-        }.also {
-            android.util.Log.d("AppointmentForm", "Normalized result: '$it'")
         }
     }
 
@@ -278,17 +312,17 @@ class AppointmentFormActivity : AppCompatActivity() {
                 calendar.add(Calendar.MINUTE, 15) // 15-minute intervals
             }
         } catch (e: Exception) {
-            android.util.Log.e("AppointmentForm", "Error generating time slots: ${e.message}")
+            // Handle error silently
         }
 
         return timeSlots
     }
 
     private fun setupSpinners() {
-        // Setup Gender Spinner with Male, Female options
-        val genderOptions = arrayOf("Select Gender", "Male", "Female")
+        // Setup Gender Spinner with placeholder
+        val genderOptions = arrayOf("Please select", "Male", "Female")
 
-        // Create custom adapter to handle placeholder styling
+        // Create custom adapter with simpler approach
         val genderAdapter = object : ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, genderOptions) {
 
             override fun isEnabled(position: Int): Boolean {
@@ -300,51 +334,70 @@ class AppointmentFormActivity : AppCompatActivity() {
                 val view = super.getView(position, convertView, parent)
                 val textView = view as TextView
 
+                // Style the main display text
+                textView.setPadding(16, 16, 16, 16)
+                textView.textSize = 16f
+
                 if (position == 0) {
                     // Set placeholder text color to gray
                     textView.setTextColor(Color.parseColor("#9CA3AF"))
                 } else {
-                    textView.setTextColor(Color.parseColor("#000000"))
+                    textView.setTextColor(Color.parseColor("#1f2937"))
                 }
 
                 return view
             }
 
             override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-                // Skip the placeholder entirely - don't create view for it
-                if (position == 0) {
-                    val emptyView = TextView(this@AppointmentFormActivity)
-                    emptyView.layoutParams = ViewGroup.LayoutParams(0, 0)
-                    emptyView.visibility = View.GONE
-                    return emptyView
-                }
-
                 val view = super.getDropDownView(position, convertView, parent)
                 val textView = view as TextView
-                textView.setTextColor(Color.parseColor("#000000"))
+
+                if (position == 0) {
+                    // Style placeholder in dropdown - make it look disabled
+                    textView.setPadding(16, 8, 16, 8)
+                    textView.textSize = 14f
+                    textView.setTextColor(Color.parseColor("#9CA3AF"))
+                    textView.setBackgroundColor(Color.parseColor("#f9fafb"))
+                    textView.isEnabled = false
+                } else {
+                    // Style normal dropdown items
+                    textView.setPadding(16, 12, 16, 12)
+                    textView.textSize = 16f
+                    textView.setTextColor(Color.parseColor("#1f2937"))
+                    textView.setBackgroundColor(Color.parseColor("#ffffff"))
+                    textView.isEnabled = true
+                }
 
                 return view
             }
-
-            override fun getCount(): Int {
-                return super.getCount()
-            }
         }
 
+        // Set dropdown resource and apply to spinner
         genderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerGender.adapter = genderAdapter
+
+        // Customize spinner appearance
+        binding.spinnerGender.apply {
+            dropDownVerticalOffset = 0
+            dropDownWidth = ViewGroup.LayoutParams.MATCH_PARENT
+            setBackgroundResource(R.drawable.rounded_edittext_background)
+            setPadding(16, 0, 16, 0)
+        }
 
         // Add selection listener
         binding.spinnerGender.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 if (position > 0) { // Ignore placeholder selection
                     val selectedGender = genderOptions[position]
-                    // Handle selection if needed
+                    android.util.Log.d("AppointmentForm", "Gender selected: $selectedGender")
+
+                    // Update the text color after selection
+                    (view as? TextView)?.setTextColor(Color.parseColor("#1f2937"))
                 }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Do nothing
+                android.util.Log.d("AppointmentForm", "No gender selected")
             }
         }
     }
@@ -473,11 +526,12 @@ class AppointmentFormActivity : AppCompatActivity() {
         // Use the selected date and time from the RecyclerViews
         val doctorName = item.name
         val doctorSpecialization = item.specialization
+        val patientName = "$firstName $lastName"
 
         // Log the collected data
         android.util.Log.d("AppointmentForm", "=== Appointment Data ===")
         android.util.Log.d("AppointmentForm", "Doctor: $doctorName")
-        android.util.Log.d("AppointmentForm", "Patient: $firstName $lastName")
+        android.util.Log.d("AppointmentForm", "Patient: $patientName")
         android.util.Log.d("AppointmentForm", "DOB: $dob")
         android.util.Log.d("AppointmentForm", "Gender: $gender")
         android.util.Log.d("AppointmentForm", "Contact: $contactNumber")
@@ -489,6 +543,9 @@ class AppointmentFormActivity : AppCompatActivity() {
 
         // Save appointment to Firebase database
         saveAppointmentToFirebase(firstName, lastName, contactNumber, email, message, doctorName, doctorSpecialization)
+
+        // Also save appointment notification locally for backup
+        saveAppointmentNotificationLocally(doctorName, patientName, doctorSpecialization)
     }
 
     private fun saveAppointmentToFirebase(
@@ -512,15 +569,15 @@ class AppointmentFormActivity : AppCompatActivity() {
                 return
             }
 
-            // Create appointment object matching AppointmentModel structure
+            // Create appointment object with correct doctor information
             val appointmentData = mapOf(
                 "id" to appointmentId,
                 "patientName" to "$firstName $lastName",
                 "patientPhone" to contactNumber,
                 "appointmentDate" to selectedDate,
                 "appointmentTime" to selectedTime,
-                "doctorId" to doctorName, // Using doctor name as identifier
-                "doctorEmail" to "", // Empty for now since DoctorsModel doesn't have email field
+                "doctorId" to doctorName, // Use doctor name as ID since DoctorsModel has no unique ID field
+                "doctorEmail" to "", // DoctorsModel has no email field
                 "doctorName" to doctorName,
                 "status" to "pending",
                 "symptoms" to message,
@@ -537,7 +594,6 @@ class AppointmentFormActivity : AppCompatActivity() {
                 }
                 .addOnFailureListener { error ->
                     android.util.Log.e("AppointmentForm", "Failed to save appointment: ${error.message}")
-                    android.util.Log.e("AppointmentForm", "Error details: ${error.cause}")
 
                     val errorMessage = when {
                         error.message?.contains("permission", ignoreCase = true) == true ->
@@ -552,6 +608,35 @@ class AppointmentFormActivity : AppCompatActivity() {
         } catch (e: Exception) {
             android.util.Log.e("AppointmentForm", "Exception in saveAppointmentToFirebase: ${e.message}")
             Toast.makeText(this@AppointmentFormActivity, "Error occurred while booking appointment", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun saveAppointmentNotificationLocally(
+        doctorName: String,
+        patientName: String,
+        doctorSpecialization: String
+    ) {
+        try {
+            // Use a simple direct approach to save the notification
+            val sharedPreferences = getSharedPreferences("appointment_notifications", MODE_PRIVATE)
+
+            // Create a simple appointment string instead of JSON object
+            val appointmentData = "$patientName|$doctorName|$selectedDate|$selectedTime|${System.currentTimeMillis()}"
+
+            // Get existing appointments and add the new one
+            val existingAppointments = sharedPreferences.getStringSet("appointments_simple", mutableSetOf()) ?: mutableSetOf()
+
+            val updatedAppointments = existingAppointments.toMutableSet()
+            updatedAppointments.add(appointmentData)
+
+            sharedPreferences.edit()
+                .putStringSet("appointments_simple", updatedAppointments)
+                .commit()
+
+            Toast.makeText(this, "Appointment booked successfully!", Toast.LENGTH_SHORT).show()
+
+        } catch (e: Exception) {
+            Toast.makeText(this, "Appointment booked, but failed to save notification", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -572,10 +657,10 @@ class AppointmentFormActivity : AppCompatActivity() {
 
         // Create the detailed message with doctor info, specialization, date, time and reminder
         val patientName = "${binding.etFirstName.text.toString().trim()} ${binding.etLastName.text.toString().trim()}"
-        val message = "Dear $patientName,\n\nYour appointment has been confirmed with Dr. $doctorName from $specialization department.\n\nDate: $date\nTime: $time\n\nPlease arrive 15 minutes before your appointed time.\nThank you!"
+        val message = "Dear $patientName,\n\nYour appointment has been confirmed with $doctorName from $specialization department.\n\nDate: $date\nTime: $time\n\nPlease arrive 15 minutes before your appointed time.\n\nThank you!"
 
         val notification = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.drawable.ic_medical_icon)
+            .setSmallIcon(R.drawable.medi_bridge_logo) // Use your app logo
             .setContentTitle("Appointment Confirmed - Dr. $doctorName")
             .setContentText("$specialization Department • $date at $time")
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))

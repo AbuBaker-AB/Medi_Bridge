@@ -68,7 +68,6 @@
                     android:id="@+id/imageView2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="32dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -83,7 +82,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="16dp"
                 android:orientation="horizontal">
 
@@ -100,16 +99,7 @@
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:id="@+id/textView4"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="18dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_weight="1"
-                    android:gravity="center_horizontal"
-                    android:text="See all"
-                    android:textColor="@color/purple" />
+     
             </LinearLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -227,7 +217,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
 
-            <!-- Home/Explorer Button -->
+            <!-- Home Button -->
             <LinearLayout
                 android:id="@+id/homeLayout"
                 android:layout_width="0dp"
@@ -244,48 +234,18 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/btn_1"
-                    app:tint="@color/purple" />
+                    android:src="@drawable/home_hospital_black" />
 
                 <TextView
+                    android:id="@+id/textViewHome"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:text="Home"
                     android:textAlignment="center"
-                    android:textColor="@color/purple"
+                    android:textColor="@color/black"
                     android:textSize="10sp"
                     android:textStyle="bold" />
-
-            </LinearLayout>
-
-            <!-- Wishlist Button -->
-            <LinearLayout
-                android:id="@+id/wishlistLayout"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:focusable="true">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/btn_2"
-                    app:tint="@color/darkgrey" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="Wishlist"
-                    android:textAlignment="center"
-                    android:textColor="@color/darkgrey"
-                    android:textSize="10sp" />
 
             </LinearLayout>
 
@@ -302,27 +262,85 @@
                 android:focusable="true">
 
                 <ImageView
+                    android:id="@+id/imageViewStethecope"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/search_icon"
-                    app:tint="@color/darkgrey" />
+                    android:src="@drawable/stethoscopes" />
 
                 <TextView
+                    android:id="@+id/textViewSearch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Search"
+                    android:text="Doctors"
                     android:textAlignment="center"
                     android:textColor="@color/darkgrey"
                     android:textSize="10sp" />
 
             </LinearLayout>
 
-
-            <!-- Notifications Button -->
+            <!-- Notification Button -->
             <LinearLayout
                 android:id="@+id/notificationLayout"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:clipChildren="false"
+                android:clipToPadding="false">
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:padding="1dp">
+
+                    <ImageView
+                        android:id="@+id/imageViewNotification"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/notification_black" />
+
+                    <!-- Notification Badge -->
+                    <TextView
+                        android:id="@+id/notificationBadge"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_gravity="top|end"
+                        android:layout_marginTop="-2dp"
+                        android:layout_marginEnd="-4dp"
+                        android:background="@drawable/circle_red"
+                        android:gravity="center"
+                        android:text="1"
+                        android:textColor="@color/white"
+                        android:textSize="8sp"
+                        android:textStyle="bold"
+                        android:visibility="invisible" />
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/textViewNotification"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Notification"
+                    android:textAlignment="center"
+                    android:textColor="@color/darkgrey"
+                    android:textSize="10sp" />
+
+            </LinearLayout>
+
+            <!-- Doctor Button -->
+            <LinearLayout
+                android:id="@+id/doctorLayout"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
@@ -333,17 +351,18 @@
                 android:focusable="true">
 
                 <ImageView
+                    android:id="@+id/imageViewDoctor"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/notification"
-                    app:tint="@color/darkgrey" />
+                    android:src="@drawable/doctor_account_black" />
 
                 <TextView
+                    android:id="@+id/textViewDoctor"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Notifications"
+                    android:text="Doctor"
                     android:textAlignment="center"
                     android:textColor="@color/darkgrey"
                     android:textSize="10sp" />

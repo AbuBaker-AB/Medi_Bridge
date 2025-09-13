@@ -22,7 +22,7 @@
             android:layout_marginTop="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="8dp"
-            android:src="@drawable/back"
+            android:src="@drawable/baseline_keyboard_backspace_24"
             android:contentDescription="@string/back_button"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -44,10 +44,12 @@
         <!-- Logo -->
         <ImageView
             android:id="@+id/logoImageView"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_marginTop="16dp"
-            android:src="@drawable/medibridge_logo"
+            android:scaleX="1.2"
+            android:scaleY="1.2"
+            android:src="@drawable/medi_bridge_logo"
             android:contentDescription="@string/medibridge_logo"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -59,10 +61,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="24dp"
             android:layout_marginEnd="24dp"
             android:layout_marginBottom="24dp"
             app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/white"
             app:cardElevation="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -112,6 +115,9 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
                         android:hint="@string/doctor_name"
+                        app:hintTextColor="@color/darkgrey"
+                        app:boxStrokeColor="@color/darkgrey"
+                        app:boxStrokeWidth="1.5dp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -130,6 +136,10 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
                         android:hint="@string/doctor_id"
+                        app:hintTextAppearance="@color/darkgrey"
+                        app:hintTextColor="@color/darkgrey"
+                        app:boxStrokeColor="@color/darkgrey"
+                        app:boxStrokeWidth="1.5dp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -325,7 +335,7 @@
                     android:layout_height="56dp"
                     android:layout_marginTop="24dp"
                     android:layout_marginBottom="16dp"
-                    android:background="@drawable/blue_bg"
+                    android:background="@color/purple"
                     android:text="@string/login"
                     android:textColor="@color/white"
                     android:textSize="16sp"

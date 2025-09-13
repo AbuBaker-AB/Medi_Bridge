@@ -50,6 +50,9 @@
             android:name=".Activity.MainActivity"
             android:exported="true" />
         <activity
+            android:name=".Activity.NotificationActivity"
+            android:exported="false" />
+        <activity
             android:name=".Activity.DoctorListActivity"
             android:exported="false" />
     </application>

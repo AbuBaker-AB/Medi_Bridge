@@ -53,13 +53,8 @@ As part of a team Android development project, my contributions included:
 
 ## 📸 Screenshots
 
-(Add your screenshots here)
+(Soon)
 
-Example:
-
-![Home Screen](screenshots/home.png)
-
-![Doctor Profile](screenshots/profile.png)
 
 ---
 

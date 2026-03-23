@@ -41,6 +41,12 @@ As part of a team Android development project, my contributions included:
 
 ---
 
+## 🏗 Architecture
+
+The application follows MVVM architecture to separate UI, business logic, and data handling. Firebase Firestore is used for real-time data management while Glide/Coil handles efficient image loading.
+
+---
+
 ## 🛠 Setup Instructions
 
 1. Clone this repository  
